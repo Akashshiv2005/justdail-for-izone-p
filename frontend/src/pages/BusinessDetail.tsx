@@ -1,0 +1,303 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { MapPin, Star, CheckCircle, Phone, MessageCircle, Share2, Edit2, Bookmark, Clock, Award, Check } from 'lucide-react';
+import SEOHead from '../components/common/SEOHead';
+
+export default function BusinessDetail() {
+  const { slug } = useParams<{ slug: string }>();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('Overview');
+
+  useEffect(() => {
+    fetch(`/api/business/${slug}`)
+      .then(res => res.json())
+      .then(resData => {
+        setData(resData);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!data || !data.business) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+        <div className="text-xl text-slate-500 font-semibold">Business not found</div>
+      </div>
+    );
+  }
+
+  const { business, gallery, services, reviews } = data;
+
+  const tabs = ['Overview', 'Products', 'Photos', 'Quick Info', 'Services', 'Reviews'];
+
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans pb-16">
+      <SEOHead 
+        title={business.seo_title || `${business.business_name} - Best ${business.category || 'Service'} in ${business.city} | BizDial`} 
+        description={business.seo_description || business.description || `Looking for ${business.category} in ${business.city}? Visit ${business.business_name} at ${business.address}. Read reviews and get contact details.`} 
+      />
+
+      {/* 
+        This is the automated Schema Generator in action!
+        The SEO Engine takes the owner's data and translates it into JSON-LD structure.
+        Google reads this script tag directly to populate Local Search & Google Maps.
+      */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": business.business_name,
+          "image": business.logo_url || "https://bizdial.com/default-logo.png",
+          "url": `https://bizdial.com/business/${slug}`,
+          "telephone": business.phone,
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": business.address,
+            "addressLocality": business.area,
+            "addressRegion": business.city,
+            "postalCode": business.pincode,
+            "addressCountry": "IN"
+          },
+          "aggregateRating": business.total_reviews > 0 ? {
+            "@type": "AggregateRating",
+            "ratingValue": business.average_rating || "4.5",
+            "reviewCount": business.total_reviews
+          } : undefined
+        })}
+      </script>
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 py-2 text-xs text-slate-500 flex items-center gap-2">
+          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <span>&gt;</span>
+          <Link to={`/search?city=${business.city}`} className="hover:text-blue-600">{business.city}</Link>
+          <span>&gt;</span>
+          <Link to={`/${business.category?.toLowerCase()}/${business.city?.toLowerCase()}`} className="hover:text-blue-600">
+            {business.category} in {business.city}
+          </Link>
+          <span>&gt;</span>
+          <span className="text-slate-800 font-medium">{business.business_name}</span>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 mt-6">
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 relative">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Logo */}
+            <div className="w-32 h-32 shrink-0 border border-slate-100 rounded-lg overflow-hidden shadow-sm flex items-center justify-center bg-white p-2">
+              <img src={business.logo_url || '/default-logo.png'} alt={business.business_name} className="max-w-full max-h-full object-contain" />
+            </div>
+
+            {/* Main Info */}
+            <div className="flex-1">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span className="bg-slate-800 text-white rounded-full p-1"><Check size={14} /></span>
+                    {business.business_name}
+                  </h1>
+                  
+                  <div className="flex items-center gap-3 mt-2 flex-wrap">
+                    <span className="bg-green-600 text-white text-sm font-bold px-2 py-0.5 rounded flex items-center">
+                      {business.average_rating || 4.5} <Star size={12} className="ml-1 fill-white" />
+                    </span>
+                    <span className="text-sm text-slate-600">
+                      {business.total_reviews || 0} Ratings
+                    </span>
+                    {business.is_verified && (
+                      <span className="flex items-center text-sm font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
+                        <CheckCircle size={14} className="mr-1 text-slate-700" /> Claimed
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-3 text-sm text-slate-600 flex-wrap">
+                    <span className="flex items-center gap-1"><MapPin size={16} className="text-slate-400" /> {business.area}, {business.city}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="flex items-center gap-1 text-green-600 font-medium"><Clock size={16} /> Open until {business.closing_time || '10:00 pm'}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="flex items-center gap-1"><Award size={16} className="text-slate-400" /> 10+ Years in Business</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-3 mt-6 flex-wrap">
+                    {business.phone && (
+                      <a href={`tel:${business.phone}`} className="px-5 py-2.5 bg-green-600 text-white font-bold rounded flex items-center gap-2 hover:bg-green-700 transition">
+                        <Phone size={18} fill="currentColor" /> {business.phone}
+                      </a>
+                    )}
+                    <button className="px-5 py-2.5 bg-blue-600 text-white font-bold rounded flex items-center gap-2 hover:bg-blue-700 transition">
+                      <MessageCircle size={18} /> Enquire Now
+                    </button>
+                    {business.whatsapp && (
+                      <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noreferrer" className="px-5 py-2.5 bg-white text-green-600 border border-green-600 font-bold rounded flex items-center gap-2 hover:bg-green-50 transition">
+                        <MessageCircle size={18} /> WhatsApp
+                      </a>
+                    )}
+                    <button className="p-2.5 bg-white text-slate-600 border border-slate-300 rounded hover:bg-slate-50 transition">
+                      <Share2 size={18} />
+                    </button>
+                    <button className="p-2.5 bg-white text-slate-600 border border-slate-300 rounded hover:bg-slate-50 transition">
+                      <Edit2 size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right side interactions */}
+                <div className="hidden lg:flex flex-col items-end">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-slate-500">{business.category}</span>
+                  </div>
+                  <button className="p-2 bg-slate-100 rounded text-slate-600 hover:bg-slate-200">
+                    <Bookmark size={20} />
+                  </button>
+                  
+                  <div className="mt-8 text-right">
+                    <p className="text-sm font-semibold text-slate-700 mb-2">Click to Rate</p>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <Star key={i} size={28} className="text-slate-300 hover:text-yellow-400 cursor-pointer transition-colors" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="mt-8 border-b border-slate-200 flex overflow-x-auto no-scrollbar">
+            {tabs.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-3 px-6 text-sm font-bold whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Photos Section */}
+            {(activeTab === 'Overview' || activeTab === 'Photos') && gallery && gallery.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Photos</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {gallery.slice(0, activeTab === 'Photos' ? 20 : 4).map((img: any, idx: number) => (
+                    <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-100">
+                      <img src={img.image_url} alt={img.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Overview / About */}
+            {activeTab === 'Overview' && (
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">About Us</h2>
+                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                  {business.description || business.short_description || "No description provided."}
+                </p>
+              </div>
+            )}
+
+            {/* Services */}
+            {(activeTab === 'Overview' || activeTab === 'Services') && services && services.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Services</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {services.map((svc: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center p-3 border border-slate-100 rounded-lg bg-slate-50">
+                      <span className="font-medium text-slate-700">{svc.name}</span>
+                      {svc.base_price > 0 && <span className="font-bold text-blue-600">₹{svc.base_price}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Reviews */}
+            {(activeTab === 'Overview' || activeTab === 'Reviews') && reviews && reviews.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Reviews</h2>
+                <div className="space-y-4">
+                  {reviews.slice(0, activeTab === 'Reviews' ? 20 : 3).map((r: any, idx: number) => (
+                    <div key={idx} className="border-b border-slate-100 pb-4 last:border-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+                          {r.user.name[0]}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-slate-800">{r.user.name}</p>
+                          <div className="flex items-center gap-1">
+                            <span className="bg-green-600 text-white text-[10px] px-1 rounded flex items-center">
+                              {r.rating} <Star size={8} className="ml-0.5 fill-white" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600">{r.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-4">Contact</h2>
+              <div className="flex items-start gap-3">
+                <Phone className="text-blue-600 mt-1" size={20} />
+                <div>
+                  <a href={`tel:${business.phone}`} className="text-blue-600 font-medium text-lg hover:underline block">
+                    {business.phone}
+                  </a>
+                  {business.whatsapp && (
+                    <a href={`https://wa.me/${business.whatsapp}`} className="text-green-600 font-medium hover:underline block mt-1">
+                      WhatsApp: {business.whatsapp}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-4">Address</h2>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                {business.address}
+                <br />
+                {business.area}, {business.city} - {business.pincode}
+              </p>
+              <div className="w-full h-48 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400">
+                Map View (Mock)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,55 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { MapPin, ChevronDown, User as UserIcon } from 'lucide-react';
+
+export default function MainHeader() {
+  return (
+    <header className="bg-white border-b border-slate-100 sticky top-0 z-50">
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-4 flex items-center justify-between">
+        
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-3xl font-black tracking-tight shrink-0 flex items-center">
+            <span className="text-blue-600">Biz</span>
+            <span className="text-orange-500">Dial</span>
+          </Link>
+          <div className="hidden md:flex items-center bg-blue-50 border border-blue-100 rounded-full px-4 py-2 cursor-pointer hover:bg-blue-100 transition-colors">
+            <MapPin size={16} className="text-blue-600 mr-2" />
+            <span className="text-sm font-semibold text-blue-700 mr-1">Trichy</span>
+            <ChevronDown size={14} className="text-blue-500" />
+          </div>
+        </div>
+
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+          {[
+            { name: 'Categories', id: 'categories', hasDropdown: true },
+            { name: 'Services', id: 'services', hasDropdown: true },
+            { name: 'How it Works', id: 'how-it-works', hasDropdown: false },
+            { name: 'Pricing', id: 'pricing', hasDropdown: false },
+            { name: 'For Business', id: 'for-business', hasDropdown: true },
+          ].map((item) => (
+            <button 
+              key={item.name}
+              onClick={() => {
+                const el = document.getElementById(item.id);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex items-center gap-1 text-sm font-bold text-slate-700 hover:text-blue-600 cursor-pointer transition-colors bg-transparent border-none p-0"
+            >
+              {item.name} {item.hasDropdown && <ChevronDown size={14} />}
+            </button>
+          ))}
+        </nav>
+
+        <div className="hidden lg:flex items-center gap-4 ml-8">
+          <Link to="/login" className="flex items-center gap-2 text-blue-600 font-bold border-2 border-blue-600 px-6 py-2 rounded-full hover:bg-blue-50 transition-colors shadow-sm">
+            <UserIcon size={18} strokeWidth={2.5} /> Login
+          </Link>
+          <Link to="/dashboard/owner" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-full transition-all shadow-lg shadow-blue-600/30">
+            List Your Business
+          </Link>
+        </div>
+
+      </div>
+    </header>
+  );
+}
