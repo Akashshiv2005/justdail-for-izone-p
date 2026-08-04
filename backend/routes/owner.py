@@ -57,6 +57,7 @@ def get_owner_profile(business_id: int, db: Session = Depends(get_db)):
         "is_verified": business.is_verified,
         "average_rating": business.average_rating,
         "total_reviews": business.total_reviews,
+        "profile_views": business.profile_views,
         "latitude": business.latitude,
         "longitude": business.longitude,
         "google_map_url": business.google_map_url,
@@ -122,9 +123,9 @@ def get_owner_stats(business_id: int, db: Session = Depends(get_db)):
     business = db.query(Business).filter(Business.id == business_id).first()
     leads_count = db.query(Lead).filter(Lead.business_id == business_id).count()
     return {
-        "profile_views": 12450, # Static for now, can be tracked in DB later
+        "profile_views": business.profile_views if business else 0,
         "leads_generated": leads_count,
-        "customer_messages": 89,
+        "customer_messages": business.whatsapp_clicks if business else 0,
         "profile_rating": business.average_rating if business else 0.0
     }
 
@@ -450,3 +451,103 @@ def delete_promotion(business_id: int, item_id: int, db: Session = Depends(get_d
 def get_owner_invoices(business_id: int, db: Session = Depends(get_db)):
     return db.query(Invoice).filter(Invoice.business_id == business_id).all()
 
+# ======================== REVIEWS ========================
+
+@router.get("/api/owner/{business_id}/reviews")
+def get_owner_reviews(business_id: int, db: Session = Depends(get_db)):
+    from models.review import Review
+    from models.user import User
+    reviews = db.query(Review).filter(Review.business_id == business_id).order_by(Review.created_at.desc()).all()
+    results = []
+    for r in reviews:
+        user = db.query(User).filter(User.id == r.user_id).first()
+        results.append({
+            "id": r.id,
+            "customer_name": user.name if user else "Anonymous",
+            "rating": r.rating,
+            "comment": r.comment,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "status": "Active" if r.moderation_status == "approved" else "Inactive"
+        })
+    return results
+
+class OwnerReviewCreate(BaseModel):
+    col1: str = "Anonymous" # Customer
+    col2: str = "5" # Rating
+    col3: str = "" # Review Snippet
+    col4: str = "" # Date
+    status: str = "Active"
+
+@router.post("/api/owner/{business_id}/reviews")
+def create_owner_review(business_id: int, payload: OwnerReviewCreate, db: Session = Depends(get_db)):
+    from models.review import Review
+    from models.user import User
+    from datetime import datetime
+    rating = int(payload.col2.replace(" Stars", "").replace(" Star", "")) if isinstance(payload.col2, str) else 5
+    date_val = datetime.strptime(payload.col4, "%Y-%m-%d") if payload.col4 else datetime.now()
+    customer_name = payload.col1 if payload.col1 and payload.col1.strip() else "Anonymous"
+    user = db.query(User).filter(User.name == customer_name).first()
+    if not user:
+        user = User(
+            name=customer_name, 
+            email=f"dummy_{int(datetime.now().timestamp())}_{customer_name.replace(' ', '').lower()[:5]}@example.com", 
+            phone=f"0000{int(datetime.now().timestamp())}"[-10:], 
+            hashed_password="dummy", 
+            role="customer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    review = Review(
+        business_id=business_id,
+        user_id=user.id,
+        rating=rating,
+        comment=payload.col3,
+        moderation_status="approved",
+        created_at=date_val
+    )
+    db.add(review)
+    db.commit()
+    return {"message": "Review added"}
+
+@router.put("/api/owner/{business_id}/reviews/{item_id}")
+def update_owner_review(business_id: int, item_id: int, payload: OwnerReviewCreate, db: Session = Depends(get_db)):
+    from models.review import Review
+    review = db.query(Review).filter(Review.id == item_id, Review.business_id == business_id).first()
+    if not review:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Review not found")
+    review.rating = int(str(payload.col2).replace(" Stars", "").replace(" Star", "")) if payload.col2 else 5
+    review.comment = payload.col3
+    review.moderation_status = "approved" if payload.status == "Active" else "pending"
+    db.commit()
+    return {"message": "Review updated"}
+
+@router.delete("/api/owner/{business_id}/reviews/{item_id}")
+def delete_owner_review(business_id: int, item_id: int, db: Session = Depends(get_db)):
+    from models.review import Review
+    review = db.query(Review).filter(Review.id == item_id, Review.business_id == business_id).first()
+    if not review:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Review not found")
+    db.delete(review)
+    db.commit()
+    return {"message": "Review deleted"}
+
+# ======================== ANALYTICS & SETTINGS DUMMIES ========================
+
+@router.get("/api/owner/{business_id}/analytics")
+def get_owner_analytics(business_id: int):
+    # Dummy data to satisfy the dashboard fetch and avoid 404
+    return []
+
+@router.get("/api/owner/{business_id}/settings")
+def get_owner_settings(business_id: int):
+    # Dummy data to satisfy the dashboard fetch and avoid 404
+    return []
+
+@router.get("/api/owner/{business_id}/support")
+def get_owner_support(business_id: int):
+    # Dummy data to satisfy the dashboard fetch and avoid 404
+    return []

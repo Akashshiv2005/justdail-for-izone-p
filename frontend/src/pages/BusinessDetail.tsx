@@ -8,6 +8,11 @@ export default function BusinessDetail() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview');
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(5);
+  const [reviewerName, setReviewerName] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
 
   useEffect(() => {
     fetch(`/api/business/${slug}`)
@@ -40,7 +45,7 @@ export default function BusinessDetail() {
 
   const { business, gallery, services, reviews } = data;
 
-  const tabs = ['Overview', 'Products', 'Photos', 'Quick Info', 'Services', 'Reviews'];
+  const tabs = ['Overview', 'Products', 'Photos', 'Services', 'Reviews'];
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans pb-16">
@@ -169,7 +174,15 @@ export default function BusinessDetail() {
                     <p className="text-sm font-semibold text-slate-700 mb-2">Click to Rate</p>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map(i => (
-                        <Star key={i} size={28} className="text-slate-300 hover:text-yellow-400 cursor-pointer transition-colors" />
+                        <Star 
+                          key={i} 
+                          size={28} 
+                          className="text-slate-300 hover:text-yellow-400 cursor-pointer transition-colors" 
+                          onClick={() => {
+                            setSelectedRating(i);
+                            setIsRatingModalOpen(true);
+                          }}
+                        />
                       ))}
                     </div>
                   </div>
@@ -177,6 +190,112 @@ export default function BusinessDetail() {
               </div>
             </div>
           </div>
+
+          {/* Rating Modal */}
+          {isRatingModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
+                <div className="p-6">
+                  {submissionSuccess ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle size={32} className="text-green-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-800 mb-2">Thank You!</h3>
+                      <p className="text-slate-500 mb-8">Your review has been successfully submitted and is now pending owner approval.</p>
+                      <button 
+                        onClick={() => {
+                          setIsRatingModalOpen(false);
+                          setSubmissionSuccess(false);
+                        }}
+                        className="w-full py-3 px-4 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="text-xl font-bold text-slate-800 mb-1">Rate {business.business_name}</h3>
+                      <p className="text-sm text-slate-500 mb-6">Your review will be visible once approved by the owner.</p>
+                      
+                      <div className="flex justify-center gap-2 mb-6">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <Star 
+                            key={i} 
+                            size={40} 
+                            fill={i <= selectedRating ? "#facc15" : "none"}
+                            className={`${i <= selectedRating ? "text-yellow-400" : "text-slate-300"} cursor-pointer transition-all hover:scale-110`}
+                            onClick={() => setSelectedRating(i)}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-1">Your Name</label>
+                          <input 
+                            type="text" 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                            placeholder="Enter your name"
+                            value={reviewerName}
+                            onChange={(e) => setReviewerName(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-1">Review</label>
+                          <textarea 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none"
+                            placeholder="Tell us about your experience..."
+                            rows={4}
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-8">
+                        <button 
+                          onClick={() => setIsRatingModalOpen(false)}
+                          className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            if (!reviewerName.trim() || !reviewComment.trim()) return;
+                            try {
+                              const res = await fetch(`/api/business/${slug}/rate`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  customer_name: reviewerName,
+                                  rating: selectedRating,
+                                  comment: reviewComment
+                                })
+                              });
+                              if (res.ok) {
+                                setSubmissionSuccess(true);
+                                setReviewComment('');
+                                setReviewerName('');
+                              } else {
+                                alert("Failed to submit review. Please try again.");
+                              }
+                            } catch (err) {
+                              console.error(err);
+                              alert("An error occurred connecting to the server.");
+                            }
+                          }}
+                          className="flex-1 py-3 px-4 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+                        >
+                          Submit Review
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="mt-8 border-b border-slate-200 flex overflow-x-auto no-scrollbar">
@@ -221,7 +340,21 @@ export default function BusinessDetail() {
                 </p>
               </div>
             )}
-
+            
+            {/* Products */}
+            {(activeTab === 'Overview' || activeTab === 'Products') && data.products && data.products.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Products</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {data.products.map((prod: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center p-3 border border-slate-100 rounded-lg bg-slate-50">
+                      <span className="font-medium text-slate-700">{prod.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* Services */}
             {(activeTab === 'Overview' || activeTab === 'Services') && services && services.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
@@ -291,8 +424,28 @@ export default function BusinessDetail() {
                 <br />
                 {business.area}, {business.city} - {business.pincode}
               </p>
-              <div className="w-full h-48 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400">
-                Map View (Mock)
+              <div className="w-full h-48 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center text-slate-400 relative border border-slate-200">
+                {business.latitude && business.longitude ? (
+                  <iframe 
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    loading="lazy" 
+                    allowFullScreen 
+                    src={`https://maps.google.com/maps?q=${business.latitude},${business.longitude}&hl=en&z=14&output=embed`}
+                  ></iframe>
+                ) : business.google_map_url ? (
+                  <div className="flex flex-col items-center justify-center p-4 text-center w-full h-full bg-slate-50">
+                    <MapPin size={32} className="text-blue-500 mb-2" />
+                    <p className="font-semibold text-slate-700 mb-3 text-sm">Location Map Available</p>
+                    <a href={business.google_map_url} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm">View on Google Maps</a>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <MapPin size={24} className="mb-2 opacity-50" />
+                    <span className="text-sm">Map Not Provided</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

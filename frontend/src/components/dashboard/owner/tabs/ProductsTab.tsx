@@ -13,8 +13,7 @@ export default function ProductsTab({ data, editingRow, setEditingRow, businessI
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Products Catalog</h2>
-          <p className="text-sm text-slate-500 mt-1">Manage your product offerings and categories.</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Products</h2>
         </div>
         <button onClick={() => setEditingRow({ isNew: true })} className="shrink-0 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
           <Plus size={16} /> Add Product
@@ -33,9 +32,6 @@ export default function ProductsTab({ data, editingRow, setEditingRow, businessI
               </button>
             </div>
             <h3 className="text-lg font-bold text-slate-900 mb-2 truncate">{product.col1}</h3>
-            <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">
-              {product.col2}
-            </span>
           </div>
         ))}
       </div>
@@ -47,7 +43,7 @@ export default function ProductsTab({ data, editingRow, setEditingRow, businessI
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
               <h3 className="font-bold text-lg mb-4">{editingRow.isNew ? 'Add' : 'Edit'} Products</h3>
               <input type="text" placeholder="Product Name" className="w-full px-4 py-2 border rounded-lg mb-4" value={editingRow.col1 || ''} onChange={e => setEditingRow({...editingRow, col1: e.target.value})} />
-              <input type="text" placeholder="Product Category" className="w-full px-4 py-2 border rounded-lg mb-4" value={editingRow.col2 || ''} onChange={e => setEditingRow({...editingRow, col2: e.target.value})} />
+              
               <div className="flex justify-between mt-2">
                 {!editingRow.isNew ? (
                    <button onClick={() => {
@@ -60,7 +56,7 @@ export default function ProductsTab({ data, editingRow, setEditingRow, businessI
                   <button onClick={() => {
                       const payload = {
                           name: editingRow.col1,
-                          category: editingRow.col2
+                          category: "General"
                       };
                       const url = editingRow.isNew ? `/api/owner/${businessId}/products` : `/api/owner/${businessId}/products/${editingRow.id}`;
                       const method = editingRow.isNew ? 'POST' : 'PUT';

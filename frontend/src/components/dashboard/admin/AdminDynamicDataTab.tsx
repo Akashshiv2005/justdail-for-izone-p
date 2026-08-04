@@ -919,7 +919,11 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
             exit={{ opacity: 0, y: 20, x: '-50%' }}
             className="fixed bottom-6 left-1/2 z-[200] bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-medium border border-slate-700"
           >
-            <CheckCircle2 size={20} className="text-green-400" />
+            {toastMessage.toLowerCase().includes('error') || toastMessage.toLowerCase().includes('fail') ? (
+              <AlertCircle size={20} className="text-red-400" />
+            ) : (
+              <CheckCircle2 size={20} className="text-green-400" />
+            )}
             {toastMessage}
           </motion.div>
         )}

@@ -14,6 +14,7 @@ export default function EnterpriseRegister() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
@@ -310,8 +311,10 @@ export default function EnterpriseRegister() {
 
       localStorage.removeItem('enterpriseRegisterDraft');
       localStorage.removeItem('enterpriseRegisterStep');
-      alert('Enterprise Business Profile Created & Submitted for Approval! Redirecting to login...');
-      navigate('/login');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -533,10 +536,12 @@ export default function EnterpriseRegister() {
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Location Type</label>
                     <select value={formData.locationType} onChange={(e) => handleInputChange('locationType', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none">
+                      <option value="">Select Location Type</option>
                       <option>Store / Retail</option>
                       <option>Office</option>
                       <option>Home Service</option>
                       <option>Online Only</option>
+                      <option>Training Center</option>
                     </select>
                   </div>
                   <div>
@@ -666,13 +671,13 @@ export default function EnterpriseRegister() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Upload className="mx-auto text-blue-600" size={28} />
-                    <p className="text-sm font-bold text-slate-800">Registration Certificate / License *</p>
+                    <p className="text-sm font-bold text-slate-800">Registration Certificate / License (Mandatory)</p>
                     <input type="file" onChange={(e) => handleInputChange('docReg', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
                   </div>
 
                   <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Upload className="mx-auto text-green-600" size={28} />
-                    <p className="text-sm font-bold text-slate-800">GST Certificate (Optional)</p>
+                    <p className="text-sm font-bold text-slate-800">GST Certificate (Mandatory)</p>
                     <input type="file" onChange={(e) => handleInputChange('docGst', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
                   </div>
                 </div>
@@ -769,6 +774,20 @@ export default function EnterpriseRegister() {
                     </div>
                   </div>
                 )}
+                {/* Working Hours & More */}
+                <div>
+                  <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2">Additional Info</h3>
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <p><span className="font-bold text-slate-600">Location Type:</span> {formData.locationType || 'N/A'}</p>
+                      <p><span className="font-bold text-slate-600">Mon-Sat Hours:</span> {formData.mondayHours || 'N/A'}</p>
+                      <p><span className="font-bold text-slate-600">Sunday Hours:</span> {formData.sundayHours || 'N/A'}</p>
+                      <p><span className="font-bold text-slate-600">24x7:</span> {formData.is24x7 ? 'Yes' : 'No'}</p>
+                      <p><span className="font-bold text-slate-600">Doc Reg:</span> {formData.docReg ? 'Uploaded' : <span className="text-red-400 italic">Missing</span>}</p>
+                      <p><span className="font-bold text-slate-600">Doc GST:</span> {formData.docGst ? 'Uploaded' : <span className="text-red-400 italic">Missing</span>}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -792,6 +811,21 @@ export default function EnterpriseRegister() {
           </form>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={32} className="text-green-600" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2">Profile Submitted!</h3>
+              <p className="text-sm text-slate-500 mb-6">Your enterprise business profile has been successfully submitted for approval.</p>
+              <p className="text-xs font-bold text-blue-600 animate-pulse">Redirecting to login...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

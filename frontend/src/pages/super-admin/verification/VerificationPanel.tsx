@@ -3,6 +3,7 @@ import {
   ShieldCheck, FileText, CheckCircle2, XCircle, AlertTriangle, 
   Eye, Award, Star, Filter, RefreshCw, Search, ShieldAlert 
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function VerificationPanel() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -10,6 +11,12 @@ export default function VerificationPanel() {
   const [selectedBiz, setSelectedBiz] = useState<any>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const fetchRequests = () => {
     setLoading(true);
@@ -38,7 +45,7 @@ export default function VerificationPanel() {
     })
       .then(res => res.json())
       .then(() => {
-        alert('Document Approved and Quality Score Updated!');
+        showToast('Document Approved and Quality Score Updated!');
         fetchRequests();
         if (selectedBiz) {
           setSelectedBiz({
@@ -56,13 +63,13 @@ export default function VerificationPanel() {
     })
       .then(res => res.json())
       .then(() => {
-        alert('Business Successfully Approved!');
+        showToast('Business Successfully Approved!');
         setSelectedBiz(null);
         fetchRequests();
       })
       .catch(err => {
         console.error(err);
-        alert('Failed to approve business');
+        showToast('Failed to approve business');
       });
   };
 
@@ -79,11 +86,11 @@ export default function VerificationPanel() {
       }));
       await Promise.all(promises);
       
-      alert(`Successfully deleted ${ids.length} requests!`);
+      showToast(`Successfully deleted ${ids.length} requests!`);
       setRequests(prev => prev.filter(r => !selectedRows.has(r.business_id)));
       setSelectedRows(new Set());
     } catch (e) {
-      alert('Error during bulk deletion.');
+      showToast('Error during bulk deletion.');
     } finally {
       setIsDeletingBulk(false);
     }
@@ -231,6 +238,24 @@ export default function VerificationPanel() {
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
+            className="fixed bottom-6 left-1/2 z-[200] bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-medium border border-slate-700"
+          >
+            {toastMessage.toLowerCase().includes('error') || toastMessage.toLowerCase().includes('fail') ? (
+              <AlertTriangle size={20} className="text-red-400" />
+            ) : (
+              <CheckCircle2 size={20} className="text-green-400" />
+            )}
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

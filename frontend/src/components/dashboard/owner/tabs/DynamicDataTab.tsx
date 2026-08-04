@@ -4,6 +4,8 @@ import ServicesTab from './ServicesTab';
 import MyBusinessTab from './MyBusinessTab';
 import GalleryTab from './GalleryTab';
 import AnalyticsTab from './AnalyticsTab';
+import SettingsTab from './SettingsTab';
+import SupportTab from './SupportTab';
 import DefaultTableTab from './DefaultTableTab';
 import { authFetch } from '../../../../lib/services/authFetch';
 
@@ -141,5 +143,13 @@ export default function DynamicDataTab({ tabName, businessId, profile }: { tabNa
     return <AnalyticsTab />;
   }
 
-  return <DefaultTableTab tabName={tabName} data={data} columns={columns} editingRow={editingRow} setEditingRow={setEditingRow} refreshData={refreshData} />;
+  if (tabName === 'Settings') {
+    return <SettingsTab profile={profile} />;
+  }
+
+  if (tabName === 'Support') {
+    return <SupportTab />;
+  }
+
+  return <DefaultTableTab tabName={tabName} data={data} columns={columns} editingRow={editingRow} setEditingRow={setEditingRow} refreshData={refreshData} businessId={businessId} />;
 }

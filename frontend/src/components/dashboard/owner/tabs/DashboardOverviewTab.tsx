@@ -35,16 +35,29 @@ interface OwnerProfile {
 }
 
 const profileActivityData = [
-  { name: 'Mon', views: 4000, clicks: 2400 },
-  { name: 'Tue', views: 3000, clicks: 1398 },
-  { name: 'Wed', views: 2000, clicks: 9800 },
-  { name: 'Thu', views: 2780, clicks: 3908 },
-  { name: 'Fri', views: 1890, clicks: 4800 },
-  { name: 'Sat', views: 2390, clicks: 3800 },
-  { name: 'Sun', views: 3490, clicks: 4300 },
+  { name: 'Mon', views: 0, clicks: 0 },
+  { name: 'Tue', views: 0, clicks: 0 },
+  { name: 'Wed', views: 0, clicks: 0 },
+  { name: 'Thu', views: 0, clicks: 0 },
+  { name: 'Fri', views: 0, clicks: 0 },
+  { name: 'Sat', views: 0, clicks: 0 },
+  { name: 'Sun', views: 0, clicks: 0 },
 ];
 
 export default function DashboardOverviewTab({ profile }: { profile: OwnerProfile | null }) {
+  const [stats, setStats] = React.useState<any>(null);
+  
+  React.useEffect(() => {
+    if (profile?.business_id) {
+      import('../../../../lib/services/authFetch').then(({ authFetch }) => {
+        authFetch(`/api/owner/${profile.business_id}/stats`)
+          .then(res => res.json())
+          .then(data => setStats(data))
+          .catch(console.error);
+      });
+    }
+  }, [profile]);
+
   return (
     <div className="p-4 sm:p-8 space-y-8 bg-slate-50/50 min-h-screen">
       {/* Welcome & Date with Rich Gradient */}
@@ -68,7 +81,7 @@ export default function DashboardOverviewTab({ profile }: { profile: OwnerProfil
               animate={{ opacity: 1, y: 0 }}
               className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight"
             >
-              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">{profile?.owner_name?.split(' ')[0] || 'Owner'}</span>! 
+              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">{profile?.owner_name || 'Owner'}</span>! 
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 10 }}
@@ -94,10 +107,10 @@ export default function DashboardOverviewTab({ profile }: { profile: OwnerProfil
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { title: 'Total Profile Views', value: '1,248', change: '+12%', color: 'from-blue-500 to-cyan-400', icon: Globe, shadow: 'shadow-blue-500/20' },
-          { title: 'Leads Generated', value: '342', change: '+24%', color: 'from-emerald-500 to-teal-400', icon: Target, shadow: 'shadow-emerald-500/20' },
-          { title: 'Customer Messages', value: '89', change: '+5%', color: 'from-amber-500 to-orange-400', icon: MessageCircle, shadow: 'shadow-amber-500/20' },
-          { title: 'Profile Rating', value: '4.8', change: 'Top 5%', color: 'from-purple-500 to-pink-400', icon: Star, shadow: 'shadow-purple-500/20' },
+          { title: 'Total Profile Views', value: stats?.profile_views || profile?.profile_views || '0', change: '+0%', color: 'from-blue-500 to-cyan-400', icon: Globe, shadow: 'shadow-blue-500/20' },
+          { title: 'Leads Generated', value: stats?.leads_generated || '0', change: '+0%', color: 'from-emerald-500 to-teal-400', icon: Target, shadow: 'shadow-emerald-500/20' },
+          { title: 'Customer Messages', value: stats?.customer_messages || '0', change: '+0%', color: 'from-amber-500 to-orange-400', icon: MessageCircle, shadow: 'shadow-amber-500/20' },
+          { title: 'Profile Rating', value: profile?.average_rating || '0.0', change: 'N/A', color: 'from-purple-500 to-pink-400', icon: Star, shadow: 'shadow-purple-500/20' },
         ].map((stat, i) => (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}

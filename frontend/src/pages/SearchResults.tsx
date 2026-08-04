@@ -49,6 +49,9 @@ export default function SearchResults() {
           queryParams.lat = location.lat;
           queryParams.lng = location.lng;
           queryParams.radius = maxDistance;
+          if (cityParam || location.city) {
+             queryParams.city = cityParam || location.city;
+          }
         } else if (cityParam) {
           queryParams.city = cityParam;
         } else if (location.city) {

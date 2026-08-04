@@ -1,9 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, X, CheckCircle } from 'lucide-react';
+import { authFetch } from '../../../../lib/services/authFetch';
 
-export default function DefaultTableTab({ tabName, data, columns, editingRow, setEditingRow }: any) {
+export default function DefaultTableTab({ tabName, data, columns, editingRow, setEditingRow, refreshData, businessId }: any) {
   const [isAdding, setIsAdding] = useState(false);
+  const [formData, setFormData] = useState<any>({});
+
+  useEffect(() => {
+    if (isAdding) {
+      setFormData({ status: 'Active', col2: '5' });
+    } else if (editingRow) {
+      setFormData({ ...editingRow });
+    }
+  }, [isAdding, editingRow]);
+
+  const handleSave = async () => {
+    const endpoint = tabName.toLowerCase().replace(' ', '');
+    const url = isAdding ? `/api/owner/${businessId}/${endpoint}` : `/api/owner/${businessId}/${endpoint}/${editingRow.id}`;
+    const method = isAdding ? 'POST' : 'PUT';
+
+    try {
+      const res = await authFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (res.ok) {
+        setEditingRow(null);
+        setIsAdding(false);
+        if (refreshData) refreshData();
+      } else {
+        alert("Failed to save entry");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error saving entry");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this entry?')) return;
+    const endpoint = tabName.toLowerCase().replace(' ', '');
+    try {
+      const res = await authFetch(`/api/owner/${businessId}/${endpoint}/${id}`, { method: 'DELETE' });
+      if (res.ok && refreshData) refreshData();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <motion.div 
@@ -66,21 +111,21 @@ export default function DefaultTableTab({ tabName, data, columns, editingRow, se
                       ) : idx === 0 ? row.col1 : idx === 1 ? row.col2 : idx === 2 ? row.col3 : row.col4}
                     </td>
                   ))}
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right flex justify-end gap-3">
                     <button onClick={() => setEditingRow(row)} className="text-blue-600 font-medium hover:underline text-xs">Edit</button>
+                    <button onClick={() => handleDelete(row.id)} className="text-red-600 font-medium hover:underline text-xs">Delete</button>
                   </td>
                 </tr>
               ))}
+              {data.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length + 1} className="px-6 py-8 text-center text-slate-500">
+                    No entries found. Click 'Add New' to create one.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-        </div>
-        <div className="px-4 sm:px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <span>Showing 1 to {Math.min(data.length, 8)} of {data.length} entries</span>
-          <div className="flex gap-1">
-            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50" disabled>Prev</button>
-            <button className="px-2.5 py-1 bg-blue-600 text-white rounded font-medium">1</button>
-            <button className="px-2.5 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50" disabled>Next</button>
-          </div>
         </div>
       </div>
 
@@ -108,24 +153,68 @@ export default function DefaultTableTab({ tabName, data, columns, editingRow, se
                 </button>
               </div>
               
-              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5 bg-white">
-                {columns.map((col: string, idx: number) => (
-                  <div key={idx}>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">{col}</label>
-                    <input 
-                      type="text" 
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-slate-50 focus:bg-white shadow-sm transition-all"
-                      defaultValue={isAdding ? '' : (idx === 0 ? editingRow.col1 : idx === 1 ? editingRow.col2 : idx === 2 ? editingRow.col3 : idx === 3 ? editingRow.col4 : editingRow.status)}
-                    />
-                  </div>
-                ))}
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {columns.map((col: string, idx: number) => {
+                    const fieldKey = col === 'Status' ? 'status' : `col${idx + 1}`;
+                    const isFullWidth = col === 'Review Snippet' || col === 'Description' || col === 'Comment';
+                    return (
+                      <div key={idx} className={isFullWidth ? "sm:col-span-2" : ""}>
+                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{col}</label>
+                        {col === 'Status' ? (
+                          <select 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all cursor-pointer appearance-none"
+                            value={formData[fieldKey] || 'Active'}
+                            onChange={(e) => setFormData({...formData, [fieldKey]: e.target.value})}
+                          >
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                          </select>
+                        ) : col === 'Rating' ? (
+                          <select 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all cursor-pointer appearance-none"
+                            value={parseInt(formData[fieldKey]) || 5}
+                            onChange={(e) => setFormData({...formData, [fieldKey]: e.target.value})}
+                          >
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                          </select>
+                        ) : col === 'Date' || col === 'Last Updated' ? (
+                          <input 
+                            type="date" 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all cursor-pointer"
+                            value={formData[fieldKey] || new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setFormData({...formData, [fieldKey]: e.target.value})}
+                          />
+                        ) : isFullWidth ? (
+                          <textarea 
+                            rows={3}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all"
+                            value={formData[fieldKey] || ''}
+                            onChange={(e) => setFormData({...formData, [fieldKey]: e.target.value})}
+                          />
+                        ) : (
+                          <input 
+                            type="text" 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all"
+                            value={formData[fieldKey] || ''}
+                            onChange={(e) => setFormData({...formData, [fieldKey]: e.target.value})}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               
               <div className="p-5 border-t border-slate-100 flex gap-3 justify-end bg-slate-50/80">
                 <button onClick={() => { setEditingRow(null); setIsAdding(false); }} className="px-5 py-2.5 font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors shadow-sm">
                   Cancel
                 </button>
-                <button onClick={() => { setEditingRow(null); setIsAdding(false); }} className="px-6 py-2.5 font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 hover:-translate-y-0.5">
+                <button onClick={handleSave} className="px-6 py-2.5 font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 hover:-translate-y-0.5">
                   <CheckCircle size={18} /> {isAdding ? 'Add Entry' : 'Save Changes'}
                 </button>
               </div>

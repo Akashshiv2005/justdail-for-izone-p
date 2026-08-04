@@ -99,15 +99,6 @@ def admin_get_logs(db: Session = Depends(get_db)):
 # DELETE ENDPOINTS
 # ==========================================
 
-@router.delete("/api/admin/business/{id}")
-def delete_business(id: int, db: Session = Depends(get_db)):
-    business = db.query(Business).filter(Business.id == id).first()
-    if not business:
-        raise HTTPException(status_code=404, detail="Business not found")
-    db.delete(business)
-    db.commit()
-    return {"message": "Business deleted successfully", "business_id": id}
-
 @router.delete("/api/admin/business-owners/{id}")
 def delete_business_owner(id: int, db: Session = Depends(get_db)):
     print(f"ATTEMPTING TO DELETE USER ID {id}")
@@ -619,6 +610,7 @@ def update_business_admin(business_id: int, request: BusinessUpdateRequest, db: 
 
 # ---- GENERIC DELETE ENDPOINTS ----
 
+@router.delete("/api/admin/business/{business_id}")
 @router.delete("/api/admin/business-approvals/{business_id}")
 @router.delete("/api/admin/business-management/{business_id}")
 def delete_business_admin(business_id: int, db: Session = Depends(get_db)):
@@ -629,6 +621,7 @@ def delete_business_admin(business_id: int, db: Session = Depends(get_db)):
     from models.business_category_mapping import BusinessCategoryMapping
     from models.business_service_mapping import BusinessServiceMapping
     from models.review import Review
+    from models.seo_models import SEOKeyword
 
     business = db.query(Business).filter(Business.id == business_id).first()
     if not business:
@@ -639,6 +632,7 @@ def delete_business_admin(business_id: int, db: Session = Depends(get_db)):
     db.query(BusinessDocument).filter(BusinessDocument.business_id == business_id).delete()
     db.query(BusinessOwnerProfile).filter(BusinessOwnerProfile.business_id == business_id).delete()
     db.query(Review).filter(Review.business_id == business_id).delete()
+    db.query(SEOKeyword).filter(SEOKeyword.business_id == business_id).delete()
     
     # Delete from business_extras
     db.query(Product).filter(Product.business_id == business_id).delete()

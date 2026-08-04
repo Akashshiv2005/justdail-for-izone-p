@@ -1,4 +1,4 @@
-﻿import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -32,7 +32,34 @@ const Home = () => {
   const brands = data?.brands ?? [];
   const stats = data?.stats ?? { businesses: 0, reviews: 0, cities: 0, users: 0 };
 
-  const visibleCategories = showAllCategories ? categories : categories.slice(0, 16);
+  const staticCategories = [
+    { name: 'Shopping', slug: 'shopping', icon: '🛍️' },
+    { name: 'Restaurants & Food', slug: 'restaurants-food', icon: '🍔' },
+    { name: 'Healthcare', slug: 'healthcare', icon: '🏥' },
+    { name: 'Hotels & Travel', slug: 'hotels-travel', icon: '🏨' },
+    { name: 'Beauty & Wellness', slug: 'beauty-wellness', icon: '💆' },
+    { name: 'Home Services', slug: 'home-services', icon: '🔧' },
+    { name: 'Automotive', slug: 'automotive', icon: '🚗' },
+    { name: 'Education', slug: 'education', icon: '🎓' },
+    { name: 'Real Estate', slug: 'real-estate', icon: '🏢' },
+    { name: 'Professional Services', slug: 'professional-services', icon: '💼' },
+    { name: 'IT & Software', slug: 'it-software', icon: '💻' },
+    { name: 'Electronics', slug: 'electronics', icon: '📱' },
+    { name: 'Finance', slug: 'finance', icon: '💰' },
+    { name: 'Legal Services', slug: 'legal-services', icon: '⚖️' },
+    { name: 'Construction', slug: 'construction', icon: '🏗️' },
+    { name: 'Industrial', slug: 'industrial', icon: '🏭' },
+    { name: 'Fitness & Sports', slug: 'fitness-sports', icon: '🏋️' },
+    { name: 'Event Planning', slug: 'event-planning', icon: '🎉' },
+    { name: 'Pet Care', slug: 'pet-care', icon: '🐾' },
+    { name: 'Advertising & Media', slug: 'advertising-media', icon: '📢' },
+    { name: 'Transport & Logistics', slug: 'transport-logistics', icon: '🚚' },
+    { name: 'Agriculture', slug: 'agriculture', icon: '🌱' },
+    { name: 'Arts & Entertainment', slug: 'arts-entertainment', icon: '🎨' },
+    { name: 'Public Services', slug: 'public-services', icon: '🏛️' },
+  ];
+
+  const visibleCategories = showAllCategories ? staticCategories : staticCategories.slice(0, 16);
 
   if (loading) {
     return (
@@ -59,21 +86,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800">
       
-      {/* 1. Top Promotion Bar */}
-      <div className="bg-[#0B1C47] text-white py-2 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between text-xs font-medium">
-        <div className="flex items-center gap-2 mb-2 md:mb-0">
-          <span className="text-blue-300"></span>
-          <span>Grow your business on BizDial and reach millions of customers across India.</span>
-        </div>
-        <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-blue-300 flex items-center gap-1"><Smartphone size={14}/> Download BizDial App</a>
-          <a href="#" className="hover:text-blue-300 flex items-center gap-1"><Briefcase size={14}/> Advertise with us</a>
-          <a href="#" className="hover:text-blue-300 flex items-center gap-1"><MessageSquare size={14}/> Help & Support</a>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-blue-300">
-            English <ChevronDown size={14} />
-          </div>
-        </div>
-      </div>
+
 
       {/* 2. Main Header */}
       <header className="bg-white border-b border-slate-100 sticky top-0 z-50">

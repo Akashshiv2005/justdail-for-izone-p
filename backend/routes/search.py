@@ -2,7 +2,7 @@ import math
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, desc, func
+from sqlalchemy import or_, and_, desc, func
 from database import get_db
 from models.business import Business
 from models.business_category_mapping import BusinessCategoryMapping
@@ -151,7 +151,7 @@ def search_businesses(
             func.replace(Business.business_name, ' ', '').ilike(f"%{cat_clean}%")
         ))
         
-    if city and not lat: # Fallback to city match if no coordinates
+    if city and not lat: # Fallback to strict city match if no coordinates
         city_aliases = [city]
         if city.lower() == "tiruchirappalli":
             city_aliases.append("trichy")
@@ -165,24 +165,37 @@ def search_businesses(
         query = query.filter(Business.area.ilike(f"%{area}%"))
 
     # REAL-TIME GEO-SPATIAL SEARCH: Bounding Box Optimization
-    # Instead of fetching all businesses and computing distance in Python (O(N)),
-    # we filter out businesses outside the maximum radius box in the SQL query itself.
     target_radius = radius if radius else config.default_radius_km
-    # Max fallback stage in Python code is 50.0km
     max_search_radius = max(target_radius, 50.0) 
 
     if lat is not None and lng is not None:
-        # 1 degree of latitude is ~111km
         lat_delta = max_search_radius / 111.0
-        # 1 degree of longitude is ~111km * cos(lat)
         lon_delta = max_search_radius / (111.0 * math.cos(math.radians(lat)))
         
-        query = query.filter(
+        geo_condition = and_(
             Business.latitude >= lat - lat_delta,
             Business.latitude <= lat + lat_delta,
             Business.longitude >= lng - lon_delta,
             Business.longitude <= lng + lon_delta
         )
+        
+        if city:
+            city_aliases = [city]
+            if city.lower() == "tiruchirappalli":
+                city_aliases.append("trichy")
+            elif city.lower() == "trichy":
+                city_aliases.append("tiruchirappalli")
+            city_conditions = [Business.city.ilike(f"%{c}%") for c in city_aliases]
+            
+            query = query.filter(or_(
+                geo_condition,
+                and_(Business.latitude.is_(None), or_(*city_conditions))
+            ))
+        else:
+            query = query.filter(or_(
+                geo_condition,
+                Business.latitude.is_(None) # If no city, we just include them and rely on distance=inf
+            ))
 
     # Fetch optimized dataset
     all_businesses = query.all()
@@ -196,11 +209,22 @@ def search_businesses(
             scored_results = []
             for biz in all_businesses:
                 dist = haversine(lat, lng, biz.latitude, biz.longitude)
-                if dist <= current_radius:
+                
+                include_no_coords = False
+                if dist == float('inf'):
+                    if city and biz.city:
+                        biz_c = biz.city.lower()
+                        c = city.lower()
+                        if c in biz_c or biz_c in c or (c == "tiruchirappalli" and biz_c == "trichy") or (c == "trichy" and biz_c == "tiruchirappalli"):
+                            include_no_coords = True
+                    elif not city:
+                        include_no_coords = True
+                        
+                if dist <= current_radius or include_no_coords:
                     score = calculate_score(biz, dist, q or "", config)
                     scored_results.append({
                         "business": biz,
-                        "distance": round(dist, 1),
+                        "distance": round(dist, 1) if dist != float('inf') else None,
                         "score": score
                     })
             
@@ -280,10 +304,23 @@ def get_business_by_slug(slug: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Business not found")
         
     gallery = db.query(GalleryImage).filter(GalleryImage.business_id == biz.id).all()
-    services = db.query(Service).filter(Service.business_id == biz.id).all()
     
-    # Fetch reviews with user info
-    reviews = db.query(Review).filter(Review.business_id == biz.id).order_by(desc(Review.created_at)).all()
+    from models.business_service_mapping import BusinessServiceMapping
+    from models.master_service import MasterService
+    
+    mappings = db.query(BusinessServiceMapping).filter(BusinessServiceMapping.business_id == biz.id).all()
+    services_data = []
+    for m in mappings:
+        ms = db.query(MasterService).filter(MasterService.id == m.master_service_id).first()
+        if ms:
+            services_data.append({
+                "name": ms.name,
+                "base_price": m.price,
+                "description": m.description
+            })
+    
+    # Fetch reviews with user info (only approved ones)
+    reviews = db.query(Review).filter(Review.business_id == biz.id, Review.moderation_status == "approved").order_by(desc(Review.created_at)).all()
     reviews_data = []
     for r in reviews:
         user = db.query(User).filter(User.id == r.user_id).first()
@@ -295,9 +332,57 @@ def get_business_by_slug(slug: str, db: Session = Depends(get_db)):
             "user": {"name": user.name if user else "Anonymous"}
         })
         
+    from models.business_extras import Product
+    products = db.query(Product).filter(Product.business_id == biz.id).all()
+        
     return {
         "business": biz,
         "gallery": gallery,
-        "services": services,
-        "reviews": reviews_data
+        "services": services_data,
+        "reviews": reviews_data,
+        "products": products
     }
+
+from pydantic import BaseModel
+
+class PublicReviewCreate(BaseModel):
+    customer_name: str
+    rating: int
+    comment: str
+
+@router.post("/api/business/{slug}/rate")
+def submit_public_review(slug: str, payload: PublicReviewCreate, db: Session = Depends(get_db)):
+    biz = db.query(Business).filter(Business.slug == slug).first()
+    if not biz:
+        raise HTTPException(status_code=404, detail="Business not found")
+        
+    import time
+    customer_name = payload.customer_name if payload.customer_name.strip() else "Anonymous"
+    
+    # Create dummy user for the review if needed, or find existing
+    user = db.query(User).filter(User.name == customer_name).first()
+    if not user:
+        user = User(
+            name=customer_name, 
+            email=f"public_{int(time.time())}_{customer_name.replace(' ', '').lower()[:5]}@example.com", 
+            phone=f"9999{int(time.time())}"[-10:], 
+            hashed_password="dummy", 
+            role="customer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    review = Review(
+        business_id=biz.id,
+        user_id=user.id,
+        rating=payload.rating,
+        comment=payload.comment,
+        moderation_status="pending"  # Needs owner approval
+    )
+    db.add(review)
+    
+    # Optionally update average rating here or recalculate it dynamically later.
+    db.commit()
+    return {"message": "Review submitted successfully and is pending approval."}
+

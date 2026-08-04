@@ -39,9 +39,7 @@ const MENU_ITEMS = [
   { group: 'Manual SEO (Overrides)', icon: Building2, items: [
     { id: 'business-seo', label: 'Business SEO', icon: Building2 },
   ]},
-  { group: 'Content & CMS', icon: LayoutDashboard, items: [
-    { id: 'cms', label: 'CMS Management', icon: FileText },
-  ]},
+
   { group: 'System & Analytics', icon: Database, items: [
     { id: 'search-analytics', label: 'Search Analytics', icon: BarChart3 },
     { id: 'analytics', label: 'Performance Reports', icon: FileBarChart },

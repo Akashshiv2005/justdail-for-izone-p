@@ -10,7 +10,9 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:1234@
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+from sqlalchemy import MetaData
+metadata_obj = MetaData(schema="bizdial")
+Base = declarative_base(metadata=metadata_obj)
 
 def get_db():
     db = SessionLocal()

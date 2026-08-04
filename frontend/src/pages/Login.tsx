@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { useAuth } from '../lib/context/AuthContext';
 import { login as apiLogin } from '../lib/services/api';
 
 const Login = () => {
   const [role, setRole] = useState<'owner' | 'admin'>('owner');
-  const [email, setEmail] = useState('akash@gmail.com');
-  const [password, setPassword] = useState('akash123');
+  const [email, setEmail] = useState('owner@gmail.com');
+  const [password, setPassword] = useState('owner123');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loginError, setLoginError] = useState<string | null>(null);
   const { login } = useAuth();
@@ -56,8 +58,8 @@ const Login = () => {
               type="button"
               onClick={() => {
                 setRole('owner');
-                setEmail('akash@gmail.com');
-                setPassword('akash123');
+                setEmail('owner@gmail.com');
+                setPassword('owner123');
               }}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role === 'owner' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
@@ -67,7 +69,7 @@ const Login = () => {
               type="button"
               onClick={() => {
                 setRole('admin');
-                setEmail('admin@bizdial.com');
+                setEmail('admin@gmail.com');
                 setPassword('admin123');
               }}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${role === 'admin' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
@@ -93,14 +95,23 @@ const Login = () => {
                 <label className="block text-sm font-bold text-slate-700">Password</label>
                 <a href="#" className="text-sm font-semibold text-blue-600 hover:underline">Forgot password?</a>
               </div>
-              <input 
-                type="password" 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
             
             <button 
