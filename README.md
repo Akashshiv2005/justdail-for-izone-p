@@ -60,7 +60,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 
 # Copy the example env file and update it with your own Postgres credentials
-cp ../.env.example ../.env   # on Windows: copy ..\.env.example ..\.env
+cp .env.example .env   # on Windows: copy .env.example .env
 
 # Generate initial database migrations (if not already created)
 alembic revision --autogenerate -m "Initial migration"
@@ -96,6 +96,9 @@ cd frontend
 
 # Install all Node modules and dependencies
 npm install
+
+# Copy the frontend environment file
+cp .env.example .env   # on Windows: copy .env.example .env
 
 # Start the Vite development server
 npm run dev
