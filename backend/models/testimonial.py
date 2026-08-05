@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 from database import Base
 
 class Testimonial(Base):
@@ -11,3 +11,7 @@ class Testimonial(Base):
     avatar_url = Column(String)
     rating = Column(Float, default=5.0)
     is_active = Column(Boolean, default=True)
+    # Track which business owner submitted this review (optional)
+    business_id = Column(Integer, nullable=True)
+    owner_id = Column(Integer, nullable=True)
+    status = Column(String, default="pending")  # pending | approved | rejected

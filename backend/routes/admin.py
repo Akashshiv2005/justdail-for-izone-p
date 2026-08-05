@@ -476,11 +476,51 @@ def get_admin_reviews(db: Session = Depends(get_db)):
         user = db.query(User).filter(User.id == review.user_id).first()
         results.append({
             "id": review.id,
+            "business_id": review.business_id,
             "Business": business.business_name if business else "Unknown",
             "Reviewer": user.name if user else "Anonymous",
             "Rating": review.rating,
+            "Review": review.comment or "",
             "Date": str(review.created_at).split()[0] if getattr(review, "created_at", None) else str(date.today()),
             "Status": "Published",
+        })
+    return results
+
+
+@router.get("/api/admin/reviews-by-business")
+def get_admin_reviews_businesses(db: Session = Depends(get_db)):
+    """Returns all businesses with their review counts for the admin reviews panel."""
+    businesses = db.query(Business).all()
+    results = []
+    for b in businesses:
+        review_count = db.query(Review).filter(Review.business_id == b.id).count()
+        avg = db.query(Review).filter(Review.business_id == b.id).all()
+        avg_rating = round(sum(r.rating for r in avg) / len(avg), 1) if avg else 0
+        results.append({
+            "id": b.id,
+            "business_name": b.business_name,
+            "category": b.category or "General",
+            "city": b.city or "-",
+            "review_count": review_count,
+            "avg_rating": avg_rating,
+        })
+    return results
+
+
+@router.get("/api/admin/reviews/business/{business_id}")
+def get_admin_reviews_for_business(business_id: int, db: Session = Depends(get_db)):
+    """Returns all reviews for a specific business."""
+    reviews = db.query(Review).filter(Review.business_id == business_id).order_by(Review.created_at.desc()).all()
+    results = []
+    for review in reviews:
+        user = db.query(User).filter(User.id == review.user_id).first()
+        results.append({
+            "id": review.id,
+            "Reviewer": user.name if user else "Anonymous",
+            "Rating": review.rating,
+            "Review": review.comment or "",
+            "Date": str(review.created_at).split()[0] if getattr(review, "created_at", None) else str(date.today()),
+            "Status": "Published" if review.moderation_status == "approved" else "Pending",
         })
     return results
 
@@ -681,3 +721,57 @@ def delete_review(review_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Review deleted successfully"}
 
+
+# ======================== PLATFORM TESTIMONIALS (Owner Reviews of BizDial) ========================
+
+@router.get("/api/admin/platform-reviews")
+def get_admin_platform_reviews(db: Session = Depends(get_db)):
+    from models.testimonial import Testimonial
+    testimonials = db.query(Testimonial).order_by(Testimonial.id.desc()).all()
+    results = []
+    for t in testimonials:
+        business = db.query(Business).filter(Business.id == t.business_id).first() if t.business_id else None
+        results.append({
+            "id": t.id,
+            "name": t.name,
+            "role": t.role,
+            "text": t.text,
+            "rating": t.rating,
+            "status": t.status or ("approved" if t.is_active else "pending"),
+            "is_active": t.is_active,
+            "business_name": business.business_name if business else "—",
+            "business_id": t.business_id,
+        })
+    return results
+
+@router.post("/api/admin/platform-reviews/{testimonial_id}/approve")
+def approve_platform_review(testimonial_id: int, db: Session = Depends(get_db)):
+    from models.testimonial import Testimonial
+    t = db.query(Testimonial).filter(Testimonial.id == testimonial_id).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Testimonial not found")
+    t.is_active = True
+    t.status = "approved"
+    db.commit()
+    return {"message": "Testimonial approved — it will now show on the homepage."}
+
+@router.post("/api/admin/platform-reviews/{testimonial_id}/reject")
+def reject_platform_review(testimonial_id: int, db: Session = Depends(get_db)):
+    from models.testimonial import Testimonial
+    t = db.query(Testimonial).filter(Testimonial.id == testimonial_id).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Testimonial not found")
+    t.is_active = False
+    t.status = "rejected"
+    db.commit()
+    return {"message": "Testimonial rejected."}
+
+@router.delete("/api/admin/platform-reviews/{testimonial_id}")
+def delete_platform_review(testimonial_id: int, db: Session = Depends(get_db)):
+    from models.testimonial import Testimonial
+    t = db.query(Testimonial).filter(Testimonial.id == testimonial_id).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Testimonial not found")
+    db.delete(t)
+    db.commit()
+    return {"message": "Testimonial deleted."}

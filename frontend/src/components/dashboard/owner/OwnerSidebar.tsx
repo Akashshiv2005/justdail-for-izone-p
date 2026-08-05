@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Package, Briefcase, Image as ImageIcon, 
-  Target, Star, BarChart, Settings, Headphones, LogOut, CheckCircle2, X
+  Target, Star, BarChart, Settings, Headphones, LogOut, CheckCircle2, X, MessageSquarePlus
 } from 'lucide-react';
 
 interface OwnerProfile {
@@ -22,6 +22,7 @@ const navItems = [
   { name: 'Analytics', icon: BarChart },
   { name: 'Settings', icon: Settings },
   { name: 'Support', icon: Headphones },
+  { name: 'Rate BizDial', icon: MessageSquarePlus, highlight: true },
 ];
 
 export default function OwnerSidebar({ 
@@ -83,12 +84,20 @@ export default function OwnerSidebar({
               onClick={() => { setActiveTab(item.name); setIsSidebarOpen(false); }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === item.name
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? item.highlight
+                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                    : 'bg-blue-50 text-blue-700'
+                  : item.highlight
+                    ? 'bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-100 hover:from-violet-100 hover:to-purple-100'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <div className="flex items-center gap-3">
-                <item.icon className={`w-4 h-4 ${activeTab === item.name ? 'text-blue-600' : 'text-slate-400'}`} />
+                <item.icon className={`w-4 h-4 ${
+                  activeTab === item.name
+                    ? item.highlight ? 'text-white' : 'text-blue-600'
+                    : item.highlight ? 'text-violet-500' : 'text-slate-400'
+                }`} />
                 {item.name}
               </div>
             </button>

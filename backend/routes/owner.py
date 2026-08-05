@@ -557,3 +557,54 @@ def get_owner_settings(business_id: int):
 def get_owner_support(business_id: int):
     # Dummy data to satisfy the dashboard fetch and avoid 404
     return []
+
+# ======================== PLATFORM REVIEWS (BizDial Testimonials) ========================
+
+class PlatformReviewCreate(BaseModel):
+    rating: float
+    review_text: str
+    title: Optional[str] = None  # e.g. "Owner at Kings Dental Academy"
+
+@router.post("/api/owner/{business_id}/platform-review")
+def submit_platform_review(business_id: int, payload: PlatformReviewCreate, db: Session = Depends(get_db)):
+    from models.testimonial import Testimonial
+    business = db.query(Business).filter(Business.id == business_id).first()
+    if not business:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Business not found")
+    owner = db.query(User).filter(User.id == business.owner_id).first()
+
+    role = payload.title or f"Owner at {business.business_name}"
+    name = owner.name if owner else "Business Owner"
+
+    testimonial = Testimonial(
+        name=name,
+        role=role,
+        text=payload.review_text,
+        rating=payload.rating,
+        is_active=False,   # requires admin approval before showing on homepage
+        status="pending",
+        business_id=business_id,
+        owner_id=business.owner_id,
+    )
+    db.add(testimonial)
+    db.commit()
+    db.refresh(testimonial)
+    return {"message": "Review submitted successfully! It will appear after admin approval.", "id": testimonial.id}
+
+@router.get("/api/owner/{business_id}/platform-reviews")
+def get_owner_platform_reviews(business_id: int, db: Session = Depends(get_db)):
+    from models.testimonial import Testimonial
+    reviews = db.query(Testimonial).filter(Testimonial.business_id == business_id).all()
+    return [
+        {
+            "id": r.id,
+            "rating": r.rating,
+            "review_text": r.text,
+            "role": r.role,
+            "status": r.status or ("approved" if r.is_active else "pending"),
+            "created_at": None,
+        }
+        for r in reviews
+    ]
+

@@ -24,6 +24,7 @@ import AdminDashboardTab from '../../components/dashboard/admin/AdminDashboardTa
 import AdminDynamicDataTab from '../../components/dashboard/admin/AdminDynamicDataTab';
 import AdminAnalyticsTab from '../../components/dashboard/admin/AdminAnalyticsTab';
 import AdminSettingsTab from '../../components/dashboard/admin/AdminSettingsTab';
+import AdminPlatformReviewsTab from '../../components/dashboard/admin/AdminPlatformReviewsTab';
 
 function DashboardContent({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const [searchParams] = useSearchParams();
@@ -63,6 +64,10 @@ function DashboardContent({ onOpenSidebar }: { onOpenSidebar: () => void }) {
 
   if (tab === 'analytics') {
     return <AdminAnalyticsTab onOpenSidebar={onOpenSidebar} />;
+  }
+
+  if (tab === 'platform-reviews') {
+    return <AdminPlatformReviewsTab onOpenSidebar={onOpenSidebar} />;
   }
 
   if (tab === 'settings') {

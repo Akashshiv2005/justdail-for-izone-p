@@ -7,6 +7,7 @@ import AnalyticsTab from './AnalyticsTab';
 import SettingsTab from './SettingsTab';
 import SupportTab from './SupportTab';
 import DefaultTableTab from './DefaultTableTab';
+import ReviewBizDialTab from './ReviewBizDialTab';
 import { authFetch } from '../../../../lib/services/authFetch';
 
 interface OwnerProfile {
@@ -98,6 +99,13 @@ export default function DynamicDataTab({ tabName, businessId, profile }: { tabNa
               obj.col3 = `${item.views_count} Views`;
               obj.col4 = item.image_url;
               break;
+            case 'Reviews':
+              obj.col1 = item.customer_name;
+              obj.col2 = String(item.rating);
+              obj.col3 = item.comment;
+              obj.col4 = item.created_at ? item.created_at.split('T')[0] : '';
+              obj.status = item.status || 'Active';
+              break;
             case 'Manage Staff':
               obj.col1 = item.name;
               obj.col2 = item.role;
@@ -149,6 +157,10 @@ export default function DynamicDataTab({ tabName, businessId, profile }: { tabNa
 
   if (tabName === 'Support') {
     return <SupportTab />;
+  }
+
+  if (tabName === 'Rate BizDial') {
+    return <ReviewBizDialTab businessId={businessId} profile={profile} />;
   }
 
   return <DefaultTableTab tabName={tabName} data={data} columns={columns} editingRow={editingRow} setEditingRow={setEditingRow} refreshData={refreshData} businessId={businessId} />;

@@ -43,6 +43,7 @@ const MENU_ITEMS = [
   { group: 'System & Analytics', icon: Database, items: [
     { id: 'search-analytics', label: 'Search Analytics', icon: BarChart3 },
     { id: 'analytics', label: 'Performance Reports', icon: FileBarChart },
+    { id: 'platform-reviews', label: 'Platform Reviews', icon: Star },
     { id: 'support', label: 'Support Center', icon: HelpCircle },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'settings', label: 'Settings', icon: Settings },
