@@ -14,6 +14,7 @@ Catalog Management: Products, services (mapped to master services), and gallery 
 Lead Management: Track and update incoming customer leads.
 Staff & Promotions: Manage staff roles and run promotional offers.
 Invoices & Stats: View billing/invoice history and business performance stats.
+Platform Feedback: Submit reviews and testimonials about the BizDial platform directly to admins.
 Super Admin Dashboard
 Business Management & Approvals: Review, approve/reject, and manage all business listings and registrations.
 Category & Subcategory Manager: Full CRUD over the platform taxonomy (currently seeded with 40 top-level categories, up from an earlier set of 29).
@@ -25,7 +26,7 @@ Global Keywords Manager: Inject high-intent keywords across categories, cities, 
 Business SEO Override: Hand-craft custom titles, descriptions, and slugs for premium clients.
 Redirects & Templates: Manage SEO redirects and per-target-type SEO templates.
 Auto-generated Sitemaps & Robots.txt: Dedicated sitemap endpoints for static pages, categories, locations (state/district/city/area), and businesses.
-Reviews, Customers, and Logs: Moderate reviews, manage customer accounts, and inspect admin activity logs.
+Reviews, Customers, and Logs: Moderate business reviews, platform testimonials, manage customer accounts, and inspect admin activity logs.
 Architecture
 Frontend: React 19 (Vite), TypeScript, Tailwind CSS v4, React Router, Recharts, Leaflet/React-Leaflet, Framer Motion, Lucide Icons.
 Backend: FastAPI (Python), SQLAlchemy 2.x, PostgreSQL (via psycopg2), Alembic migrations, JWT auth (PyJWT + Passlib/Bcrypt).
