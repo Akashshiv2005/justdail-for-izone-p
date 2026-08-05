@@ -371,7 +371,7 @@ function RobotsView() {
       .then(res => res.json())
       .then(data => {
         const disallowLines = (data.disallow_paths || []).map((p: string) => `Disallow: ${p}`).join('\n');
-        setRobotsText(`User-agent: *\nAllow: /\n${disallowLines}\n\nSitemap: http://localhost:8000/sitemap.xml`);
+        setRobotsText(`User-agent: *\nAllow: /\n${disallowLines}\n\nSitemap: ${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/sitemap.xml`);
       })
       .catch(console.error);
   }, []);
@@ -461,7 +461,7 @@ function SitemapView() {
           <p className="text-xs text-slate-500">Auto-generated instantly by the backend engine</p>
         </div>
         <a 
-          href="http://localhost:8000/sitemap.xml" 
+          href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/sitemap.xml`} 
           target="_blank" 
           rel="noreferrer"
           className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition"

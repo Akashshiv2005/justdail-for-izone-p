@@ -116,7 +116,7 @@ export default function BusinessOwnerDashboard() {
 
             <div className="flex items-center gap-3 cursor-pointer group">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-200 overflow-hidden border border-slate-300 group-hover:border-blue-400 transition-colors shrink-0">
-                <img src={profile?.logo_url ? `http://localhost:8000${profile.logo_url}` : "https://ui-avatars.com/api/?name=Rajesh+Kumar&background=0D8ABC&color=fff"} alt="User" className="w-full h-full object-cover" />
+                <img src={profile?.logo_url ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${profile.logo_url}` : "https://ui-avatars.com/api/?name=Rajesh+Kumar&background=0D8ABC&color=fff"} alt="User" className="w-full h-full object-cover" />
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">{profile?.owner_name || 'Owner'}</p>

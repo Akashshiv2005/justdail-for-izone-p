@@ -1,5 +1,5 @@
 import re
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc, func
 from database import get_db
@@ -17,7 +17,8 @@ from typing import Optional, List, Dict, Any
 
 router = APIRouter()
 
-BASE_URL = "http://localhost:5173"
+import os
+BASE_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 def slugify(text: str) -> str:
     if not text:
@@ -274,12 +275,13 @@ def get_dynamic_landing_page(
 # =====================================================
 
 @router.get("/sitemap.xml")
-def sitemap_index(db: Session = Depends(get_db)):
+def sitemap_index(request: Request, db: Session = Depends(get_db)):
     """Master sitemap index pointing to child sitemaps."""
+    base_url = str(request.base_url).rstrip('/')
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     for child in ["sitemap-static.xml", "sitemap-categories.xml", "sitemap-locations.xml", "sitemap-businesses.xml"]:
-        xml.append(f"  <sitemap><loc>http://localhost:8000/{child}</loc></sitemap>")
+        xml.append(f"  <sitemap><loc>{base_url}/{child}</loc></sitemap>")
     xml.append("</sitemapindex>")
     return Response(content="\n".join(xml), media_type="application/xml")
 
@@ -368,7 +370,8 @@ def sitemap_businesses(db: Session = Depends(get_db)):
 # =====================================================
 
 @router.get("/robots.txt")
-def get_dynamic_robots(db: Session = Depends(get_db)):
+def get_dynamic_robots(request: Request, db: Session = Depends(get_db)):
+    base_url = str(request.base_url).rstrip('/')
     robots_cfg = db.query(SEORobots).first()
     content = ["User-agent: *"]
     if robots_cfg and robots_cfg.disallow_paths:
@@ -381,7 +384,7 @@ def get_dynamic_robots(db: Session = Depends(get_db)):
         content.append("Disallow: /api/")
     content.append("Allow: /")
     content.append("")
-    content.append("Sitemap: http://localhost:8000/sitemap.xml")
+    content.append(f"Sitemap: {base_url}/sitemap.xml")
 
     return Response(content="\n".join(content), media_type="text/plain")
 
