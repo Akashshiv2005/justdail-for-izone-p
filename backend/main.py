@@ -28,6 +28,11 @@ from routes.admin_category import router as admin_category_router, subrouter as 
 from routes.location_routes import router as location_router
 from routes.search_admin import router as search_admin_router
 
+from sqlalchemy import text
+with engine.connect() as conn:
+    conn.execute(text("CREATE SCHEMA IF NOT EXISTS bizdial"))
+    conn.commit()
+
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
