@@ -14,7 +14,8 @@ with engine.begin() as conn:
     print("Creating public schema just in case...")
     conn.execute(text("CREATE SCHEMA public"))
     
-    conn.execute(text("ALTER DATABASE bizdial SET search_path TO bizdial, public"))
+    db_name = engine.url.database
+    conn.execute(text(f'ALTER DATABASE "{db_name}" SET search_path TO bizdial, public'))
     
     print("Creating alembic_version table manually...")
     conn.execute(text("CREATE TABLE IF NOT EXISTS bizdial.alembic_version (version_num VARCHAR(32) NOT NULL, CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num))"))
