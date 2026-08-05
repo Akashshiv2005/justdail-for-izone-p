@@ -39,6 +39,7 @@ export default function MyBusinessTab({ profile, businessId, refreshData }: any)
       });
       if (res.ok) {
         if (refreshData) refreshData();
+        window.location.reload(); // Force full reload to update profile context map
       }
     } catch (e) {
       console.error("Failed to save contact info", e);

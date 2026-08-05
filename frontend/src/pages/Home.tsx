@@ -61,27 +61,7 @@ const Home = () => {
 
   const visibleCategories = showAllCategories ? staticCategories : staticCategories.slice(0, 16);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 font-medium">Loading BizDial...</p>
-        </div>
-      </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 font-medium mb-2">Failed to load data</p>
-          <p className="text-slate-400 text-sm">Make sure the backend server is running on port 8000</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800">

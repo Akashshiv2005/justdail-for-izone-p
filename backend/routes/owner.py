@@ -82,6 +82,12 @@ def update_owner_contact(business_id: int, payload: ProfileContactUpdate, db: Se
         business.address = payload.address
     if payload.google_map_url is not None:
         business.google_map_url = payload.google_map_url
+        import re
+        match = re.search(r'@([-.\d]+),([-.\d]+)', payload.google_map_url)
+        if match:
+            business.latitude = float(match.group(1))
+            business.longitude = float(match.group(2))
+            
     if payload.phone is not None:
         business.phone = payload.phone
     if payload.whatsapp is not None:
