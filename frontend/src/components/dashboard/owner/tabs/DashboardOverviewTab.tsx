@@ -28,6 +28,7 @@ interface OwnerProfile {
   is_verified: boolean;
   average_rating: number;
   total_reviews: number;
+  profile_views?: number;
   latitude?: number;
   longitude?: number;
   logo_url?: string;
