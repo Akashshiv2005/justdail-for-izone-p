@@ -2,6 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Using a standard Postgres URI. The user must provide the exact pgAdmin credentials.
 # Format: postgresql://<username>:<password>@<host>:<port>/<dbname>

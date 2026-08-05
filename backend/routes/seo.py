@@ -18,6 +18,9 @@ from typing import Optional, List, Dict, Any
 router = APIRouter()
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 BASE_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 def slugify(text: str) -> str:
