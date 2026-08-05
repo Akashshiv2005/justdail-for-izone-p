@@ -20,7 +20,7 @@ export default function EnterpriseRegister() {
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/admin/categories/')
+    fetch('/api/admin/categories/')
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
