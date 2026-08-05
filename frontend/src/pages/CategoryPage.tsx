@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, Phone, CheckCircle2, Search, ArrowRight, ShieldCheck, ChevronRight } from 'lucide-react';
 
@@ -33,13 +33,13 @@ export default function CategoryPage() {
       try {
         setLoading(true);
         // Fetch categories list to match slug
-        const res = await fetch('http://127.0.0.1:8000/api/categories');
+        const res = await fetch('/api/categories');
         if (res.ok) {
           const cats = await res.json();
           const matched = cats.find((c: any) => c.slug === categorySlug);
           if (matched) {
             // Fetch subcategories for matched category
-            const subRes = await fetch(`http://127.0.0.1:8000/api/admin/subcategories/?category_id=${matched.id}`);
+            const subRes = await fetch(`/api/admin/subcategories/?category_id=${matched.id}`);
             const subs = subRes.ok ? await subRes.json() : [];
             setCategory({ ...matched, subcategories: subs });
             setSubcategories(subs);
@@ -80,7 +80,7 @@ export default function CategoryPage() {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-extrabold capitalize mb-3 flex items-center gap-3">
-            <span>{category?.icon && !category.icon.match(/^[a-zA-Z]+$/) ? category.icon : '📦'}</span>
+            <span>{category?.icon && !category.icon.match(/^[a-zA-Z]+$/) ? category.icon : '??'}</span>
             Best {categoryName} Services Near You
           </h1>
           <p className="text-slate-300 max-w-2xl text-base">

@@ -202,7 +202,7 @@ export default function EnterpriseRegister() {
   useEffect(() => {
     const selectedCat = categories.find(c => c.name === formData.category);
     if (selectedCat) {
-      fetch(`http://127.0.0.1:8000/api/admin/subcategories/?category_id=${selectedCat.id}`)
+      fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
         .then(res => res.json())
         .then(data => setSubCategories(data))
         .catch(err => console.error("Error fetching subcategories:", err));

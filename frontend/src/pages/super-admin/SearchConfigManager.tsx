@@ -1,9 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Save, CheckCircle, Sliders, AlertCircle } from 'lucide-react';
 import { authFetch } from '../../lib/services/authFetch';
 import { motion } from 'framer-motion';
 
-const BASE = 'http://127.0.0.1:8000';
+const BASE = '';
 
 export default function SearchConfigManager({ onOpenSidebar }: { onOpenSidebar?: () => void }) {
   const [config, setConfig] = useState<any>(null);

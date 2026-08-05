@@ -39,7 +39,7 @@ export default function CategoryManager() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await authFetch('http://127.0.0.1:8000/api/admin/categories/');
+      const res = await authFetch('/api/admin/categories/');
       if (res.ok) {
         const data = await res.json();
         setCategories(data);
@@ -92,8 +92,8 @@ export default function CategoryManager() {
     e.preventDefault();
     try {
       const url = editingCategory
-        ? `http://127.0.0.1:8000/api/admin/categories/${editingCategory.id}`
-        : 'http://127.0.0.1:8000/api/admin/categories/';
+        ? `/api/admin/categories/${editingCategory.id}`
+        : '/api/admin/categories/';
       const method = editingCategory ? 'PUT' : 'POST';
 
       const res = await authFetch(url, {
@@ -117,7 +117,7 @@ export default function CategoryManager() {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this category? All subcategories under it may be affected.')) return;
     try {
-      const res = await authFetch(`http://127.0.0.1:8000/api/admin/categories/${id}`, {
+      const res = await authFetch(`/api/admin/categories/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {

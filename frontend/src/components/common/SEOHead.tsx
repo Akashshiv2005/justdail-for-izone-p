@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface SEOHeadProps {
   title: string;
@@ -64,7 +64,7 @@ export default function SEOHead({
       canonicalEl.href = `${window.location.origin}${canonical}`;
     }
 
-    // JSON-LD Schemas — remove previous ones and inject new
+    // JSON-LD Schemas � remove previous ones and inject new
     document.querySelectorAll('script[data-seo-schema]').forEach(el => el.remove());
     schemas.forEach((schema, idx) => {
       const script = document.createElement('script');

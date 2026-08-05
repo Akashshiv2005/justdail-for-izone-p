@@ -26,7 +26,7 @@ export default function SubcategoryPage() {
       try {
         setLoading(true);
         // Search API with category term
-        const res = await fetch(`http://127.0.0.1:8000/api/search?q=${subcategoryName}`);
+        const res = await fetch(`/api/search?q=${subcategoryName}`);
         if (res.ok) {
           const data = await res.json();
           setBusinesses(data);

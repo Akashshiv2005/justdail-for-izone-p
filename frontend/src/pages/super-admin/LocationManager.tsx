@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin, Plus, Edit3, Trash2, Download, RefreshCw, Search,
@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { authFetch } from '../../lib/services/authFetch';
 
-const BASE = 'http://127.0.0.1:8000';
+const BASE = '';
 
 type Tab = 'overview' | 'districts' | 'cities' | 'areas';
 
@@ -49,16 +49,16 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€ Overview â”€â”€â”€â”€â”€â”€â”€
+// ─────── Overview ───────
 function OverviewTab({ stats }: { stats: Stats | null }) {
   const cards = [
-    { label: 'Countries', value: stats?.countries ?? '—', icon: Globe, color: 'bg-blue-100 text-blue-700' },
-    { label: 'States', value: stats?.states ?? '—', icon: Map, color: 'bg-indigo-100 text-indigo-700' },
-    { label: 'Districts', value: stats?.districts ?? '—', icon: LayoutGrid, color: 'bg-purple-100 text-purple-700' },
-    { label: 'Cities', value: stats?.cities ?? '—', icon: Building2, color: 'bg-emerald-100 text-emerald-700' },
-    { label: 'Areas', value: stats?.areas ?? '—', icon: MapPin, color: 'bg-orange-100 text-orange-700' },
-    { label: 'SEO Pages', value: stats?.seo_pages ?? '—', icon: Globe, color: 'bg-teal-100 text-teal-700' },
-    { label: 'URL Slugs', value: stats?.slugs ?? '—', icon: ChevronRight, color: 'bg-pink-100 text-pink-700' },
+    { label: 'Countries', value: stats?.countries ?? '�', icon: Globe, color: 'bg-blue-100 text-blue-700' },
+    { label: 'States', value: stats?.states ?? '�', icon: Map, color: 'bg-indigo-100 text-indigo-700' },
+    { label: 'Districts', value: stats?.districts ?? '�', icon: LayoutGrid, color: 'bg-purple-100 text-purple-700' },
+    { label: 'Cities', value: stats?.cities ?? '�', icon: Building2, color: 'bg-emerald-100 text-emerald-700' },
+    { label: 'Areas', value: stats?.areas ?? '�', icon: MapPin, color: 'bg-orange-100 text-orange-700' },
+    { label: 'SEO Pages', value: stats?.seo_pages ?? '�', icon: Globe, color: 'bg-teal-100 text-teal-700' },
+    { label: 'URL Slugs', value: stats?.slugs ?? '�', icon: ChevronRight, color: 'bg-pink-100 text-pink-700' },
   ];
   return (
     <div className="space-y-6">
@@ -80,7 +80,7 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
         <p className="text-sm text-slate-600 mb-4">All 38 districts seeded. Dynamic SEO pages, slugs, and sitemaps are live.</p>
         <div className="flex flex-wrap gap-2 text-xs font-semibold">
           {['state-sitemap.xml', 'district-sitemap.xml', 'city-sitemap.xml', 'area-sitemap.xml', 'category-sitemap.xml', 'business-sitemap.xml'].map(sm => (
-            <a key={sm} href={`http://127.0.0.1:8000/${sm}`} target="_blank" rel="noreferrer"
+            <a key={sm} href={`/${sm}`} target="_blank" rel="noreferrer"
               className="bg-white border border-blue-200 rounded-lg px-3 py-1.5 text-blue-700 hover:bg-blue-50 transition-colors">
               {sm}
             </a>
@@ -91,7 +91,7 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€ Districts â”€â”€â”€â”€â”€â”€â”€
+// ─────── Districts ───────
 function DistrictsTab({ onToast }: { onToast: (msg: string) => void }) {
   const [districts, setDistricts] = useState<District[]>([]);
   const [search, setSearch] = useState('');
@@ -205,7 +205,7 @@ function DistrictsTab({ onToast }: { onToast: (msg: string) => void }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€ Cities â”€â”€â”€â”€â”€â”€â”€
+// ─────── Cities ───────
 function CitiesTab({ onToast }: { onToast: (msg: string) => void }) {
   const [cities, setCities] = useState<City[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -337,7 +337,7 @@ function CitiesTab({ onToast }: { onToast: (msg: string) => void }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€ Areas â”€â”€â”€â”€â”€â”€â”€
+// ─────── Areas ───────
 function AreasTab({ onToast }: { onToast: (msg: string) => void }) {
   const [areas, setAreas] = useState<Area[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -450,7 +450,7 @@ function AreasTab({ onToast }: { onToast: (msg: string) => void }) {
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€
+// ─────── Main Component ───────
 export default function LocationManager({ onOpenSidebar }: { onOpenSidebar?: () => void }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [stats, setStats] = useState<Stats | null>(null);
@@ -483,7 +483,7 @@ export default function LocationManager({ onOpenSidebar }: { onOpenSidebar?: () 
             <MapPin className="text-blue-600" size={24} />
             Location Management
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Manage India → Tamil Nadu → Districts → Cities → Areas hierarchy</p>
+          <p className="text-sm text-slate-500 mt-1">Manage India ? Tamil Nadu ? Districts ? Cities ? Areas hierarchy</p>
         </div>
         <button onClick={() => authFetch(`${BASE}/api/admin/locations/stats`).then(r => r.json()).then(setStats)}
           className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50">

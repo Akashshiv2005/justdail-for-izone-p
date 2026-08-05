@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Search, MapPin, Star, CheckCircle, Phone, MessageCircle, ArrowRight, HelpCircle, Globe, ChevronRight, ThumbsUp, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -88,10 +88,10 @@ export default function LandingPage() {
               Verified Listings: {businesses.length}
             </span>
             <span className="bg-blue-800/80 px-3 py-1.5 rounded-full border border-blue-600/50">
-              ⚡ Instant Contact Options
+              ? Instant Contact Options
             </span>
             <span className="bg-blue-800/80 px-3 py-1.5 rounded-full border border-blue-600/50">
-              â­ Ratings & User Reviews
+              ⭐ Ratings & User Reviews
             </span>
           </div>
         </div>
@@ -107,14 +107,14 @@ export default function LandingPage() {
 
           {/* Filter Bar */}
           <div className="flex gap-3 mb-6 overflow-x-auto pb-2 no-scrollbar">
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">Sort by <span className="text-xs">▼</span></button>
+            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">Sort by <span className="text-xs">?</span></button>
             <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1"><Zap size={14} className="fill-current text-slate-700"/> Quick Response</button>
             <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1"><Star size={14} className="fill-current"/> Top Rated</button>
-            <button className="px-4 py-1.5 border border-blue-200 bg-blue-50 text-blue-700 rounded-full text-sm font-bold whitespace-nowrap hover:bg-blue-100 flex items-center gap-1">✓ Jd Verified</button>
+            <button className="px-4 py-1.5 border border-blue-200 bg-blue-50 text-blue-700 rounded-full text-sm font-bold whitespace-nowrap hover:bg-blue-100 flex items-center gap-1">? Jd Verified</button>
             <button className="px-4 py-1.5 border border-blue-200 text-blue-600 rounded-full text-sm font-bold whitespace-nowrap hover:bg-blue-50 flex items-center gap-1">% Deals</button>
-            <button className="px-4 py-1.5 border border-yellow-200 text-yellow-600 rounded-full text-sm font-bold whitespace-nowrap hover:bg-yellow-50 flex items-center gap-1">ðŸ† Jd Trust</button>
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">Ratings <span className="text-xs">▼</span></button>
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">â˜· All Filters</button>
+            <button className="px-4 py-1.5 border border-yellow-200 text-yellow-600 rounded-full text-sm font-bold whitespace-nowrap hover:bg-yellow-50 flex items-center gap-1">🏆 Jd Trust</button>
+            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">Ratings <span className="text-xs">?</span></button>
+            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">☷ All Filters</button>
           </div>
 
           {businesses.length === 0 ? (
@@ -130,7 +130,7 @@ export default function LandingPage() {
                 className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden"
               >
                 <div className="absolute top-2 right-4 text-xs text-slate-500 flex items-center gap-1">
-                  Previously Connected â“˜
+                  Previously Connected ⓘ
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-6 mt-4">

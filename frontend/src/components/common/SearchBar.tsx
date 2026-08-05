@@ -3,7 +3,7 @@ import { Search, MapPin, Loader2, Navigation } from 'lucide-react';
 import { useLocationContext } from '../../lib/context/LocationContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const BASE = 'http://127.0.0.1:8000';
+const BASE = '';
 
 interface Suggestion {
   type: 'category' | 'business';

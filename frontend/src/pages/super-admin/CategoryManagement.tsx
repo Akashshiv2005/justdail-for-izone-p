@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layers, List, Tag, Plus, Edit2, Trash2, CheckCircle2, ChevronRight, X } from 'lucide-react';
 import { authFetch } from '../../lib/services/authFetch';
 

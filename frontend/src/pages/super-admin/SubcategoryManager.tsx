@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Edit3, Trash2, Search, Layers, Filter } from 'lucide-react';
 import { authFetch } from '../../lib/services/authFetch';
 
@@ -45,7 +45,7 @@ export default function SubcategoryManager() {
 
   const fetchCategories = async () => {
     try {
-      const res = await authFetch('http://127.0.0.1:8000/api/admin/categories/');
+      const res = await authFetch('/api/admin/categories/');
       if (res.ok) {
         const data = await res.json();
         setCategories(data);
@@ -61,7 +61,7 @@ export default function SubcategoryManager() {
   const fetchSubcategories = async () => {
     try {
       setLoading(true);
-      let url = 'http://127.0.0.1:8000/api/admin/subcategories/';
+      let url = '/api/admin/subcategories/';
       if (selectedCategoryFilter !== 'all') {
         url += `?category_id=${selectedCategoryFilter}`;
       }
@@ -122,8 +122,8 @@ export default function SubcategoryManager() {
     e.preventDefault();
     try {
       const url = editingSubcategory
-        ? `http://127.0.0.1:8000/api/admin/subcategories/${editingSubcategory.id}`
-        : 'http://127.0.0.1:8000/api/admin/subcategories/';
+        ? `/api/admin/subcategories/${editingSubcategory.id}`
+        : '/api/admin/subcategories/';
       const method = editingSubcategory ? 'PUT' : 'POST';
 
       const res = await authFetch(url, {
@@ -147,7 +147,7 @@ export default function SubcategoryManager() {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this subcategory?')) return;
     try {
-      const res = await authFetch(`http://127.0.0.1:8000/api/admin/subcategories/${id}`, {
+      const res = await authFetch(`/api/admin/subcategories/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
@@ -298,7 +298,7 @@ export default function SubcategoryManager() {
                 {editingSubcategory ? 'Edit Subcategory' : 'Create New Subcategory'}
               </h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                ✕
+                ?
               </button>
             </div>
 
