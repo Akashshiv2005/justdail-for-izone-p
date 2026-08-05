@@ -75,13 +75,3 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 @app.get("/")
 def read_root():
     return {"message": "Welcome to BizDial API - Server is Running and Database is Connected!"}
-
-@app.get("/seed-db")
-def trigger_seed():
-    import subprocess
-    try:
-        subprocess.run(["python", "setup_bizdial_schema.py"], check=True)
-        subprocess.run(["python", "master_seed.py"], check=True)
-        return {"status": "Database successfully seeded on Render!"}
-    except Exception as e:
-        return {"error": str(e)}
