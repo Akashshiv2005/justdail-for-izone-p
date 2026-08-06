@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import ProductsTab from '../../../components/dashboard/owner/tabs/ProductsTab';
-import ServicesTab from '../../../components/dashboard/owner/tabs/ServicesTab';
+import ProductsAndServicesTab from '../../../components/dashboard/owner/tabs/ProductsAndServicesTab';
 import MyBusinessTab from '../../../components/dashboard/owner/tabs/MyBusinessTab';
 import GalleryTab from '../../../components/dashboard/owner/tabs/GalleryTab';
 import OwnerSidebar from '../../../components/dashboard/owner/OwnerSidebar';
@@ -152,6 +151,10 @@ export default function BusinessOwnerDashboard() {
           <DashboardOverviewTab profile={profile} />
           </motion.div>
           </AnimatePresence>
+          ) : activeTab === 'Products & Services' ? (
+            <AnimatePresence mode="wait">
+              <ProductsAndServicesTab key={`ps-${businessId}`} businessId={businessId} profile={profile} />
+            </AnimatePresence>
           ) : (
             <AnimatePresence mode="wait">
               <DynamicDataTab key={`${activeTab}-${businessId}`} tabName={activeTab} businessId={businessId} profile={profile} />

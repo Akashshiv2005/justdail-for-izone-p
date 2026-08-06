@@ -1,5 +1,5 @@
-from models.business_extras import Product, Service, GalleryImage, Lead, LeadStatus, Staff, StaffRole, Invoice
-from models.review import Review
+from app.models.business_extras import Product, Service, GalleryImage, Lead, LeadStatus, Staff, StaffRole, Invoice
+from app.models.review import Review
 import sys
 import random
 import asyncio
@@ -7,36 +7,36 @@ import re
 import os
 from datetime import datetime, timedelta
 
-from database import engine, SessionLocal, Base
+from app.database import engine, SessionLocal, Base
 from sqlalchemy.orm import Session
 
-import models.business
-import models.business_service_mapping
-import models.testimonial
-import models.subcategory
-import models.review
-import models.location
-import models.verification_models
-import models.user
-import models.business_extras
-import models.category
-import models.seo_models
-import models.brand
-import models.category_keyword
-import models.master_service
-import models.business_category_mapping
+import app.models.business
+import app.models.business_service_mapping
+import app.models.testimonial
+import app.models.subcategory
+import app.models.review
+import app.models.location
+import app.models.verification_models
+import app.models.user
+import app.models.business_extras
+import app.models.category
+import app.models.seo_models
+import app.models.brand
+import app.models.category_keyword
+import app.models.master_service
+import app.models.business_category_mapping
 
-from models.business_service_mapping import BusinessServiceMapping
-from models.user import User, RoleEnum
-from models.location import Country, State, District, City, Area, Locality, LocationSEO, LocationSlug, LocationKeyword
-from models.seo_models import SEOKeyword, CitySEO, CategorySEO
-from models.business import Business
-from models.category_keyword import CategoryKeyword
-from models.category import Category
-from models.business_category_mapping import BusinessCategoryMapping
-from models.subcategory import Subcategory
-from models.master_service import MasterService
-from auth_utils import get_password_hash
+from app.models.business_service_mapping import BusinessServiceMapping
+from app.models.user import User, RoleEnum
+from app.models.location import Country, State, District, City, Area, Locality, LocationSEO, LocationSlug, LocationKeyword
+from app.models.seo_models import SEOKeyword, CitySEO, CategorySEO
+from app.models.business import Business
+from app.models.category_keyword import CategoryKeyword
+from app.models.category import Category
+from app.models.business_category_mapping import BusinessCategoryMapping
+from app.models.subcategory import Subcategory
+from app.models.master_service import MasterService
+from app.auth_utils import get_password_hash
 
 # ========================================
 # seed_all.py

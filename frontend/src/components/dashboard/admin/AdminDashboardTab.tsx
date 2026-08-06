@@ -57,7 +57,7 @@ export default function AdminDashboardTab({ onOpenSidebar }: { onOpenSidebar: ()
           <p className="text-sm text-slate-500 mt-1">Here's what's happening with your platform today.</p>
         </div>
         <div className="bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-600 shadow-sm w-fit">
-          22 July 2026, Wednesday 
+          {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}
         </div>
       </div>
 
@@ -69,12 +69,12 @@ export default function AdminDashboardTab({ onOpenSidebar }: { onOpenSidebar: ()
         className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4"
       >
         {[
-          { title: "Total Businesses", value: stats && stats.total_businesses !== undefined ? stats.total_businesses.toLocaleString() : "...", change: "+ 152 today", icon: Building2, border: "border-blue-500", bg: "bg-blue-100", text: "text-blue-600", lightBg: "bg-blue-50" },
-          { title: "Total Users", value: stats && stats.total_users !== undefined ? stats.total_users.toLocaleString() : "...", change: "+ 420 today", icon: Users, border: "border-green-500", bg: "bg-green-100", text: "text-green-600", lightBg: "bg-green-50" },
-          { title: "Total Revenue", value: stats && stats.total_revenue !== undefined ? `₹${stats.total_revenue.toLocaleString()}` : "...", change: "+ 8% this month", icon: IndianRupee, border: "border-purple-500", bg: "bg-purple-100", text: "text-purple-600", lightBg: "bg-purple-50" },
-          { title: "Total Leads", value: stats && stats.total_leads !== undefined ? stats.total_leads.toLocaleString() : "...", change: "+ 68 today", icon: PhoneCall, border: "border-orange-500", bg: "bg-orange-100", text: "text-orange-600", lightBg: "bg-orange-50" },
-          { title: "Total Reviews", value: stats && stats.total_reviews !== undefined ? stats.total_reviews.toLocaleString() : "...", change: "+ 354 today", icon: Star, border: "border-teal-500", bg: "bg-teal-100", text: "text-teal-600", lightBg: "bg-teal-50" },
-          { title: "Premium Listings", value: stats && stats.premium_listings !== undefined ? stats.premium_listings.toLocaleString() : "...", change: "+ 95 this month", icon: Crown, border: "border-pink-500", bg: "bg-pink-100", text: "text-pink-600", lightBg: "bg-pink-50" },
+          { title: "Total Businesses", value: stats && stats.total_businesses !== undefined ? stats.total_businesses.toLocaleString() : "0", change: "+ 152 today", icon: Building2, border: "border-blue-500", bg: "bg-blue-100", text: "text-blue-600", lightBg: "bg-blue-50" },
+          { title: "Total Users", value: stats && stats.total_users !== undefined ? stats.total_users.toLocaleString() : "0", change: "+ 420 today", icon: Users, border: "border-green-500", bg: "bg-green-100", text: "text-green-600", lightBg: "bg-green-50" },
+          { title: "Total Revenue", value: stats && stats.total_revenue !== undefined ? `₹${stats.total_revenue.toLocaleString()}` : "₹0", change: "+ 8% this month", icon: IndianRupee, border: "border-purple-500", bg: "bg-purple-100", text: "text-purple-600", lightBg: "bg-purple-50" },
+          { title: "Total Leads", value: stats && stats.total_leads !== undefined ? stats.total_leads.toLocaleString() : "0", change: "+ 68 today", icon: PhoneCall, border: "border-orange-500", bg: "bg-orange-100", text: "text-orange-600", lightBg: "bg-orange-50" },
+          { title: "Total Reviews", value: stats && stats.total_reviews !== undefined ? stats.total_reviews.toLocaleString() : "0", change: "+ 354 today", icon: Star, border: "border-teal-500", bg: "bg-teal-100", text: "text-teal-600", lightBg: "bg-teal-50" },
+          { title: "Premium Listings", value: stats && stats.premium_listings !== undefined ? stats.premium_listings.toLocaleString() : "0", change: "+ 95 this month", icon: Crown, border: "border-pink-500", bg: "bg-pink-100", text: "text-pink-600", lightBg: "bg-pink-50" },
         ].map((metric, i) => (
           <motion.div 
             key={i} 
@@ -135,22 +135,22 @@ export default function AdminDashboardTab({ onOpenSidebar }: { onOpenSidebar: ()
             <div>
               <p className="text-xs font-medium text-slate-500 mb-1">Businesses Added</p>
               <div className="flex items-end gap-2">
-                <span className="text-xl font-bold text-slate-900">1,245</span>
-                <span className="text-xs font-medium text-green-600 mb-1">↑ 18.5%</span>
+                <span className="text-xl font-bold text-slate-900">{stats?.businesses_added?.toLocaleString() || '0'}</span>
+                <span className="text-xs font-medium text-green-600 mb-1">↑ 0%</span>
               </div>
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500 mb-1">Users Added</p>
               <div className="flex items-end gap-2">
-                <span className="text-xl font-bold text-slate-900">8,542</span>
-                <span className="text-xs font-medium text-green-600 mb-1">↑ 22.6%</span>
+                <span className="text-xl font-bold text-slate-900">{stats?.users_added?.toLocaleString() || '0'}</span>
+                <span className="text-xs font-medium text-green-600 mb-1">↑ 0%</span>
               </div>
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500 mb-1">Premium Businesses</p>
               <div className="flex items-end gap-2">
-                <span className="text-xl font-bold text-slate-900">325</span>
-                <span className="text-xs font-medium text-green-600 mb-1">↑ 15.3%</span>
+                <span className="text-xl font-bold text-slate-900">{stats?.premium_added?.toLocaleString() || '0'}</span>
+                <span className="text-xs font-medium text-green-600 mb-1">↑ 0%</span>
               </div>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default function AdminDashboardTab({ onOpenSidebar }: { onOpenSidebar: ()
             </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
               <span className="text-xs text-slate-500 font-medium">Total</span>
-              <span className="text-lg font-bold text-slate-900">58,423</span>
+              <span className="text-lg font-bold text-slate-900">{stats?.total_categories?.toLocaleString() || '0'}</span>
             </div>
           </div>
           <div className="mt-4 space-y-3">

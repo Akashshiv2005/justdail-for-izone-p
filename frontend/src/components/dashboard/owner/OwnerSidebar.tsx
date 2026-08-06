@@ -14,8 +14,7 @@ interface OwnerProfile {
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard },
   { name: 'My Business', icon: Building2 },
-  { name: 'Products', icon: Package },
-  { name: 'Services', icon: Briefcase },
+  { name: 'Products & Services', icon: Briefcase },
   { name: 'Gallery', icon: ImageIcon },
   { name: 'Leads', icon: Target },
   { name: 'Reviews', icon: Star },

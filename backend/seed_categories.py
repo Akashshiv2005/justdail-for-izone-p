@@ -1,16 +1,16 @@
 import sys
 import re
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from models.category import Category
-from models.subcategory import Subcategory
-from models.category_keyword import CategoryKeyword
-from models.master_service import MasterService
-from models.business_service_mapping import BusinessServiceMapping
-from models.business import Business
-from models.user import User
-from models.review import Review
-from models.business_category_mapping import BusinessCategoryMapping
+from app.database import SessionLocal
+from app.models.category import Category
+from app.models.subcategory import Subcategory
+from app.models.category_keyword import CategoryKeyword
+from app.models.master_service import MasterService
+from app.models.business_service_mapping import BusinessServiceMapping
+from app.models.business import Business
+from app.models.user import User
+from app.models.review import Review
+from app.models.business_category_mapping import BusinessCategoryMapping
 
 categories_data = {
     "Shopping": [

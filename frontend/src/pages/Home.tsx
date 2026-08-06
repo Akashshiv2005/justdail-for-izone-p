@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, MapPin, ChevronDown, Bell, MessageSquare, 
@@ -8,7 +8,8 @@ import {
   Building, Users, ShieldCheck, ThumbsUp, ArrowRight,
   Monitor, Headphones, Quote,
   FileText, Zap, BarChart, Settings, Award, TrendingUp, Compass,
-  ChevronLeft, ChevronRight, Share2, Heart, Activity, Zap as ZapIcon
+  ChevronLeft, ChevronRight, Share2, Heart, Activity, Zap as ZapIcon,
+  Menu, X
 } from 'lucide-react';
 import { useHomeData } from '../lib/hooks/useHomeData';
 import SearchBar from '../components/common/SearchBar';
@@ -25,13 +26,45 @@ const Home = () => {
 
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllFeatured, setShowAllFeatured] = useState(false);
+  const [userLocation, setUserLocation] = useState('Detecting...');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || 'Unknown Location';
+            setUserLocation(city);
+          } catch (e) {
+            console.error("Error fetching city", e);
+            setUserLocation('your area');
+          }
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          setUserLocation('your area');
+        }
+      );
+    } else {
+      setUserLocation('your area');
+    }
+  }, []);
 
   const categories = data?.categories ?? [];
   const featuredBusinesses = data?.featured_businesses ?? [];
   const topPicks = data?.top_picks ?? [];
   const testimonials = data?.testimonials ?? [];
-  const brands = data?.brands ?? [];
-  const stats = data?.stats ?? { businesses: 0, reviews: 0, cities: 0, users: 0 };
+  const apiBrands = data?.brands ?? [];
+  const brandNames = ["Trichy Saratha's", "Pothys", "The Chennai Silks", "Saravana Stores", "RmKV Silks", "Nalli Silks", "Jayachandran Textiles", "Ramraj Cotton", "Naidu Hall", "Sundari Silks", "Kumaran Silks", "Sri Kumaran Silks", "Sri Ganapathy Silks", "SMR Silks", "Sreeleathers", "Seematti", "Kalyan Silks", "Aachi Apparel & Silks", "Thangamayil Textiles", "RMK Textiles", "Co-optex", "Nallappa Silks", "J V Textiles", "Malar Silks", "Prisma Legwear", "Sri Nachammai Cotton", "Rajapalayam Textile Showrooms", "Vinaayak Fabrics", "Colombo Stores", "KnK Fashions"];
+  const colors = ['text-blue-500', 'text-purple-500', 'text-orange-500', 'text-green-500', 'text-pink-500'];
+  const defaultBrands = brandNames.map((name, i) => ({ id: i, name, color: colors[i % colors.length] }));
+  const brands = apiBrands.length > 0 ? apiBrands : defaultBrands;
+  const fallbackStats = { businesses: '15 Lakh', reviews: '10 Lakh', cities: '500', users: '30 Lakh' };
+  const stats = (data?.stats && data.stats.businesses > 10) ? data.stats : fallbackStats;
 
   const staticCategories = [
     { name: 'Shopping', slug: 'shopping', icon: '🛍️' },
@@ -65,7 +98,7 @@ const Home = () => {
 
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-800">
+    <div className="min-h-screen bg-white font-sans text-slate-800 overflow-x-hidden">
       
 
 
@@ -80,18 +113,17 @@ const Home = () => {
             </Link>
             <div className="hidden md:flex items-center bg-blue-50 border border-blue-100 rounded-full px-4 py-2 cursor-pointer hover:bg-blue-100 transition-colors">
               <MapPin size={16} className="text-blue-600 mr-2" />
-              <span className="text-sm font-semibold text-blue-700 mr-1">Trichy</span>
+              <span className="text-sm font-semibold text-blue-700 mr-1">{userLocation}</span>
               <ChevronDown size={14} className="text-blue-500" />
             </div>
           </div>
 
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
             {[
-              { name: 'Categories', id: 'categories', hasDropdown: true },
-              { name: 'Services', id: 'services', hasDropdown: true },
+              { name: 'Categories', id: 'categories', hasDropdown: false },
               { name: 'How it Works', id: 'how-it-works', hasDropdown: false },
               { name: 'Pricing', id: 'pricing', hasDropdown: false },
-              { name: 'For Business', id: 'for-business', hasDropdown: true },
+              { name: 'For Business', id: 'for-business', hasDropdown: false },
             ].map((item) => (
               <button 
                 key={item.name}
@@ -115,7 +147,62 @@ const Home = () => {
             </Link>
           </div>
 
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="lg:hidden p-2 text-slate-600 hover:text-blue-600 transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-white border-t border-slate-100 p-4 absolute top-full left-0 right-0 shadow-lg flex flex-col gap-4 z-50">
+            <div className="flex items-center bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-2">
+              <MapPin size={18} className="text-blue-600 mr-2" />
+              <span className="text-sm font-semibold text-blue-700 mr-1 flex-1">{userLocation}</span>
+              <ChevronDown size={16} className="text-blue-500" />
+            </div>
+            <nav className="flex flex-col gap-2">
+              {[
+                { name: 'Categories', id: 'categories' },
+                { name: 'How it Works', id: 'how-it-works' },
+                { name: 'Pricing', id: 'pricing' },
+                { name: 'For Business', id: 'for-business' },
+              ].map((item) => (
+                <button 
+                  key={item.name}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    const el = document.getElementById(item.id);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-left py-3 px-4 rounded-xl text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                >
+                  {item.name}
+                </button>
+              ))}
+            </nav>
+            <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-slate-100">
+              <Link 
+                to="/login" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 text-blue-600 font-bold border-2 border-blue-600 px-6 py-3 rounded-xl hover:bg-blue-50 transition-colors"
+              >
+                <UserIcon size={18} strokeWidth={2.5} /> Login
+              </Link>
+              <Link 
+                to="/dashboard/owner" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-blue-600/20"
+              >
+                List Your Business
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* 3. Hero Section */}
@@ -139,7 +226,7 @@ const Home = () => {
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 
               transition={{ duration: 0.7, type: "spring" }} 
-              className="text-5xl md:text-6xl lg:text-[64px] font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1] relative z-20"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-[64px] font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1] relative z-20 break-words"
             >
               Find. Connect. Grow<br/>
               All Local, All in <span className="text-blue-600 drop-shadow-md">Biz</span><span className="text-orange-500 drop-shadow-md">Dial</span>
@@ -155,7 +242,7 @@ const Home = () => {
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
               <span className="text-[11px] font-bold text-slate-900 mr-2">Popular Searches:</span>
-              {['Restaurants', 'Hospitals', 'Mobile Shops', 'Gyms', 'Beauty Salons', 'Electricians', 'More âŒ„'].map((tag) => (
+              {['Restaurants', 'Hospitals', 'Mobile Shops', 'Gyms', 'Beauty Salons', 'Electricians', 'More'].map((tag) => (
                 <span key={tag} className="px-4 py-1.5 bg-white rounded-full text-[11px] font-semibold text-slate-600 hover:text-blue-600 cursor-pointer transition-colors shadow-sm border border-slate-100">
                   {tag}
                 </span>
@@ -249,31 +336,31 @@ const Home = () => {
           <div className="flex items-center gap-4 z-10 hover:scale-105 transition-transform duration-300 cursor-default">
             <div className="w-14 h-14 bg-white shadow-sm text-blue-600 rounded-full flex items-center justify-center shrink-0 border border-slate-100"><Building size={24}/></div>
             <div>
-              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.businesses > 0 ? `${stats.businesses}+` : '0'}</p>
+              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.businesses ? `${stats.businesses}+` : '0'}</p>
               <p className="text-xs font-bold text-slate-800">Businesses</p>
               <p className="text-[10px] text-slate-500">Listed on BizDial</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 z-10 border-l border-slate-200 pl-6">
+          <div className="flex items-center gap-4 z-10 md:border-l border-slate-200 md:pl-6 pt-4 md:pt-0">
             <div className="w-14 h-14 bg-white shadow-sm text-blue-500 rounded-full flex items-center justify-center shrink-0 border border-slate-100"><MessageSquare size={24}/></div>
             <div>
-              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.reviews > 0 ? `${stats.reviews}+` : '0'}</p>
+              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.reviews ? `${stats.reviews}+` : '0'}</p>
               <p className="text-xs font-bold text-slate-800">User Reviews</p>
               <p className="text-[10px] text-slate-500">Trusted & Genuine</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 z-10 border-l border-slate-200 pl-6">
+          <div className="flex items-center gap-4 z-10 md:border-l border-slate-200 md:pl-6 pt-4 md:pt-0">
             <div className="w-14 h-14 bg-white shadow-sm text-blue-500 rounded-full flex items-center justify-center shrink-0 border border-slate-100"><MapPin size={24}/></div>
             <div>
-              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.cities > 0 ? `${stats.cities}+` : '0'}</p>
+              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.cities ? `${stats.cities}+` : '0'}</p>
               <p className="text-xs font-bold text-slate-800">Cities</p>
               <p className="text-[10px] text-slate-500">Across India</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 z-10 border-l border-slate-200 pl-6">
+          <div className="flex items-center gap-4 z-10 md:border-l border-slate-200 md:pl-6 pt-4 md:pt-0">
             <div className="w-14 h-14 bg-white shadow-sm text-blue-500 rounded-full flex items-center justify-center shrink-0 border border-slate-100"><Users size={24}/></div>
             <div>
-              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.users > 0 ? `${stats.users}+` : '0'}</p>
+              <p className="font-extrabold text-[22px] text-slate-900 leading-tight">{stats.users ? `${stats.users}+` : '0'}</p>
               <p className="text-xs font-bold text-slate-800">Happy Users</p>
               <p className="text-[10px] text-slate-500">Every Month</p>
             </div>
@@ -366,11 +453,8 @@ const Home = () => {
                 <Star size={13} className="fill-white" /> TOP PICKS
               </div>
               <h2 className="text-3xl md:text-[42px] font-black text-slate-900 mb-3 tracking-tight">
-                Featured Businesses <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-blue-500">in Trichy</span>
+                Featured Businesses <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-blue-500">in {userLocation}</span>
               </h2>
-              <p className="text-slate-500 font-medium text-[15px]">
-                Handpicked trusted businesses delivering excellence in Trichy
-              </p>
             </div>
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors shadow-sm shrink-0 text-sm">
               View All Businesses <ArrowRight size={16} />
@@ -821,7 +905,7 @@ const Home = () => {
         </div>
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8 xl:px-12 relative z-10">
           <div className="flex flex-col lg:flex-row gap-12 xl:gap-16 mb-16">
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
               <div className="lg:col-span-1 pr-4">
                 <Link to="/" className="text-3xl font-black tracking-tight flex items-center mb-4"><span className="text-[#0B1C47]">Biz</span><span className="text-orange-500">Dial</span></Link>
                 <div className="w-8 h-1 bg-orange-500 rounded-full mb-6"></div>
@@ -837,21 +921,48 @@ const Home = () => {
                 <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg></div><h4 className="font-extrabold text-slate-900 text-[15px]">Quick Links</h4></div>
                 <div className="w-6 h-0.5 bg-orange-500 rounded-full mb-6 ml-[52px]"></div>
                 <ul className="space-y-4 text-[13px] text-slate-600 font-semibold ml-[52px]">
-                  {['Top Categories', 'Featured Businesses', 'How BizDial Works', 'Browse Locations'].map((item, idx) => (<li key={idx}><a href="#" className="flex items-center justify-between hover:text-orange-500 transition-colors group pr-4">{item} <ChevronRight size={14} className="text-orange-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" /></a></li>))}
+                  {[
+                    { name: 'Top Categories', href: '#categories' },
+                    { name: 'Featured Businesses', href: '#services' },
+                    { name: 'How BizDial Works', href: '#how-it-works' },
+                    { name: 'Browse Locations', href: '#locations' }
+                  ].map((item, idx) => (
+                    <li key={idx}>
+                      <button onClick={() => {
+                        const el = document.getElementById(item.href.substring(1));
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }} className="flex w-full items-center justify-between hover:text-orange-500 transition-colors group pr-4 text-left">
+                        {item.name} <ChevronRight size={14} className="text-orange-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </div>
               <div className="lg:col-span-1 pl-0 md:pl-4 lg:border-l border-slate-200">
                 <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" /><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" /><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" /></svg></div><h4 className="font-extrabold text-slate-900 text-[15px]">Grow With Us</h4></div>
                 <div className="w-6 h-0.5 bg-orange-500 rounded-full mb-6 ml-[52px]"></div>
                 <ul className="space-y-4 text-[13px] text-slate-600 font-semibold ml-[52px]">
-                  {['Premium Services', 'List Your Business', 'Business Login', 'Advertise with Us'].map((item, idx) => (<li key={idx}><a href="#" className="flex items-center justify-between hover:text-orange-500 transition-colors group pr-4">{item} <ChevronRight size={14} className="text-orange-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" /></a></li>))}
-                </ul>
-              </div>
-              <div className="lg:col-span-1 pl-0 md:pl-4 lg:border-l border-slate-200">
-                <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0"><Users size={18} strokeWidth={2.5} /></div><h4 className="font-extrabold text-slate-900 text-[15px]">Company</h4></div>
-                <div className="w-6 h-0.5 bg-orange-500 rounded-full mb-6 ml-[52px]"></div>
-                <ul className="space-y-4 text-[13px] text-slate-600 font-semibold ml-[52px]">
-                  {['About Us', 'Careers', 'Newsroom', 'Contact Us'].map((item, idx) => (<li key={idx}><a href="#" className="flex items-center justify-between hover:text-orange-500 transition-colors group pr-4">{item} <ChevronRight size={14} className="text-orange-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" /></a></li>))}
+                  {[
+                    { name: 'Premium Services', href: '#pricing' },
+                    { name: 'List Your Business', href: '/register', isRoute: true },
+                    { name: 'Business Login', href: '/login', isRoute: true },
+                    { name: 'Advertise with Us', href: '#pricing' }
+                  ].map((item, idx) => (
+                    <li key={idx}>
+                      {item.isRoute ? (
+                        <Link to={item.href} className="flex items-center justify-between hover:text-orange-500 transition-colors group pr-4 text-left">
+                          {item.name} <ChevronRight size={14} className="text-orange-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                        </Link>
+                      ) : (
+                        <button onClick={() => {
+                          const el = document.getElementById(item.href.substring(1));
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }} className="flex w-full items-center justify-between hover:text-orange-500 transition-colors group pr-4 text-left">
+                          {item.name} <ChevronRight size={14} className="text-orange-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                        </button>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>

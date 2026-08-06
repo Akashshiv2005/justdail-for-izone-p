@@ -18,18 +18,18 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from database import Base, SQLALCHEMY_DATABASE_URL
+from app.database import Base, SQLALCHEMY_DATABASE_URL
 # Make sure to import all models so they get registered with Base
-import models.business
-import models.user
-import models.business_extras
-import models.category
-import models.subcategory
-import models.location
-import models.review
-import models.master_service
-import models.business_service_mapping
-import models.business_category_mapping
+import app.models.business
+import app.models.user
+import app.models.business_extras
+import app.models.category
+import app.models.subcategory
+import app.models.location
+import app.models.review
+import app.models.master_service
+import app.models.business_service_mapping
+import app.models.business_category_mapping
 
 target_metadata = Base.metadata
 config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)

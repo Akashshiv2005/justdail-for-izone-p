@@ -1,27 +1,27 @@
 import sys
 import os
 
-from database import SessionLocal
-import models.brand
-import models.business
-import models.business_category_mapping
-import models.business_extras
-import models.business_service_mapping
-import models.category
-import models.category_keyword
-import models.location
-import models.master_service
-import models.review
-import models.search_config
-import models.seo_models
-import models.subcategory
-import models.testimonial
-import models.user
-import models.verification_models
+from app.database import SessionLocal
+import app.models.brand
+import app.models.business
+import app.models.business_category_mapping
+import app.models.business_extras
+import app.models.business_service_mapping
+import app.models.category
+import app.models.category_keyword
+import app.models.location
+import app.models.master_service
+import app.models.review
+import app.models.search_config
+import app.models.seo_models
+import app.models.subcategory
+import app.models.testimonial
+import app.models.user
+import app.models.verification_models
 
-from models.user import User, RoleEnum
-from models.business import Business
-from auth_utils import get_password_hash
+from app.models.user import User, RoleEnum
+from app.models.business import Business
+from app.auth_utils import get_password_hash
 
 db = SessionLocal()
 

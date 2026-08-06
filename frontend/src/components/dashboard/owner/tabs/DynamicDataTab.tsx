@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import ProductsTab from './ProductsTab';
-import ServicesTab from './ServicesTab';
 import MyBusinessTab from './MyBusinessTab';
 import GalleryTab from './GalleryTab';
 import AnalyticsTab from './AnalyticsTab';
@@ -130,14 +128,6 @@ export default function DynamicDataTab({ tabName, businessId, profile }: { tabNa
   }, [tabName, refreshCount]);
 
   const columns = getColumns(tabName);
-
-  if (tabName === 'Products') {
-    return <ProductsTab data={data} editingRow={editingRow} setEditingRow={setEditingRow} businessId={businessId} refreshData={refreshData} />;
-  }
-
-  if (tabName === 'Services') {
-    return <ServicesTab data={data} editingRow={editingRow} setEditingRow={setEditingRow} profile={profile} businessId={businessId} refreshData={refreshData} />;
-  }
 
   if (tabName === 'My Business') {
     return <MyBusinessTab profile={profile} businessId={businessId} refreshData={refreshData} />;

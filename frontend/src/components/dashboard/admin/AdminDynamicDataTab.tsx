@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { authFetch } from '../../../lib/services/authFetch';
-import { Building2, PhoneCall, CheckCircle2, Menu, X, Edit3, MapPin, UserSquare2, Target, Users, AlertCircle, Star, ChevronLeft, MessageSquare } from 'lucide-react';
+import { Building2, PhoneCall, CheckCircle2, Menu, X, Edit3, MapPin, UserSquare2, Target, Users, AlertCircle, Star, ChevronLeft, MessageSquare, Clock, Tag, Image, FileText, ExternalLink } from 'lucide-react';
 
 export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: string, onOpenSidebar: () => void }) {
   const [editingRow, setEditingRow] = useState<any>(null);
@@ -15,11 +15,37 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   const [deletingRow, setDeletingRow] = useState<any>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   // Reviews drill-down state
   const [selectedBusiness, setSelectedBusiness] = useState<{ id: number; name: string } | null>(null);
   const [businessReviews, setBusinessReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+
+  const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
+  const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
+
+  useEffect(() => {
+    fetch('/api/admin/categories/')
+      .then(res => res.json())
+      .then(data => setCategories(data))
+      .catch(err => console.error("Error fetching categories:", err));
+  }, []);
+
+  useEffect(() => {
+    const selectedCatName = editFormData['Category'] ?? editingRow?.['Category'];
+    if (selectedCatName && categories.length > 0) {
+      const selectedCat = categories.find(c => c.name === selectedCatName);
+      if (selectedCat) {
+        fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
+          .then(res => res.json())
+          .then(data => setSubCategories(data))
+          .catch(err => console.error("Error fetching subcategories:", err));
+      }
+    } else {
+      setSubCategories([]);
+    }
+  }, [categories, editFormData['Category'], editingRow?.['Category']]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -40,15 +66,77 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
 
   const handleSave = async () => {
     try {
-      const apiResource = tab === 'business-management' ? 'business' : tab;
+      const apiResource = tab === 'business-management' || tab === 'business-directory' ? 'business' : tab;
       const endpoint = isAdding
         ? `/api/admin/${apiResource}`
         : `/api/admin/${apiResource}/${editingRow.id}`;
       const method = isAdding ? 'POST' : 'PUT';
+      
+      let payload = { ...editFormData };
+      if (apiResource === 'business') {
+        // Map frontend labels to backend snake_case keys
+        const keyMap: Record<string, string> = {
+          'Business Name': 'business_name',
+          'Category': 'category',
+          'Business Type': 'business_type',
+          'Address': 'address',
+          'City': 'city',
+          'Pincode': 'pincode',
+          'Business Phone': 'phone',
+          'WhatsApp': 'whatsapp',
+          'Website': 'website',
+          'Description': 'description',
+          'Owner': 'owner_name',
+          'Owner Email': 'owner_email',
+          'Owner Phone': 'owner_phone',
+          'Approval Status': 'approval_status',
+          'Status': 'is_verified',
+          'Map URL': 'map_url',
+          'Logo URL': 'logo_url',
+          'Certificate URL': 'certificate_url',
+          'Working Days': 'working_days',
+          'Open Time': 'open_time',
+          'Close Time': 'close_time',
+          'Payment Methods': 'payment_methods',
+          'Facebook URL': 'facebook_url',
+          'Instagram URL': 'instagram_url',
+          'Twitter URL': 'twitter_url',
+          'LinkedIn URL': 'linkedin_url',
+          'Owner Role': 'owner_role',
+          'Owner Aadhar': 'owner_aadhar',
+          'Owner Address': 'owner_address',
+          'Display Name': 'display_name',
+          'Sub Category': 'sub_category',
+          'PAN Number': 'pan_number',
+          'GSTIN Number': 'gstin_number',
+          'Service Radius': 'service_radius',
+          'Location Type': 'location_type',
+          'Landline Number': 'landline_number',
+          'Services Offered': 'services_offered',
+          'Cover Banner URL': 'cover_banner_url',
+          'GST Certificate URL': 'gst_certificate_url',
+          'Sunday Hours': 'sunday_hours',
+          'slug': 'slug',
+          'seo_title': 'seo_title',
+          'seo_description': 'seo_description',
+          'seo_keywords': 'seo_keywords'
+        };
+        const mappedPayload: any = {};
+        for (const [k, v] of Object.entries(editFormData)) {
+          if (keyMap[k]) {
+            if (k === 'Status') mappedPayload[keyMap[k]] = v === 'Verified';
+            else mappedPayload[keyMap[k]] = v;
+          } else {
+            mappedPayload[k] = v;
+          }
+        }
+        payload = mappedPayload;
+      }
+
       const res = await authFetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         showToast(isAdding ? 'Item added successfully!' : 'Changes saved successfully!');
@@ -75,7 +163,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   const confirmDelete = async () => {
     if (!deletingRow) return;
     try {
-      const apiResource = tab === 'business-management' || tab === 'business-approvals' ? 'business' : tab;
+      const apiResource = tab === 'business-management' || tab === 'business-approvals' || tab === 'business-directory' ? 'business' : tab;
       const res = await authFetch(`/api/admin/${apiResource}/${deletingRow.id}`, { method: 'DELETE' });
       if (res.ok) {
         showToast('Item deleted successfully!');
@@ -90,14 +178,17 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedRows.size === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedRows.size} items?`)) return;
+    setShowBulkDeleteConfirm(true);
+  };
+
+  const executeBulkDelete = async () => {
     
     setIsDeletingBulk(true);
     try {
       const ids = Array.from(selectedRows);
-      const apiResource = tab === 'business-management' || tab === 'business-approvals' ? 'business' : tab;
+      const apiResource = tab === 'business-management' || tab === 'business-approvals' || tab === 'business-directory' ? 'business' : tab;
       
       const promises = ids.map(id => authFetch(`/api/admin/${apiResource}/${id}`, { method: 'DELETE' }));
       const responses = await Promise.all(promises);
@@ -120,6 +211,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
       showToast('Error during bulk deletion.');
     } finally {
       setIsDeletingBulk(false);
+      setShowBulkDeleteConfirm(false);
     }
   };
 
@@ -147,6 +239,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   const getTableSchema = () => {
     switch (tab) {
       case 'business-approvals': return ['Business Name', 'Owner', 'GST Number', 'Documents', 'Status'];
+      case 'business-directory':
       case 'business-management': return ['Business Name', 'Category', 'City', 'Owner', 'Status'];
       case 'business-owners': return ['Owner Name', 'Contact Info', 'Business Type', 'Joined Date', 'Status'];
       case 'customers': return ['Customer Name', 'Email', 'Phone', 'Joined Date', 'Status'];
@@ -218,7 +311,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
     setLoading(true);
     setError(null);
 
-    const endpoint = tab === 'reviews' ? 'reviews-by-business' : tab === 'locations' ? 'business-management' : tab;
+    const endpoint = tab === 'reviews' ? 'reviews-by-business' : (tab === 'locations' || tab === 'business-directory' || tab === 'business-approvals') ? 'business-management' : tab;
 
     authFetch(`/api/admin/${endpoint}`)
       .then(async (res) => {
@@ -335,9 +428,11 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
           </h1>
           <p className="text-sm text-slate-500 mt-1">Manage all {title.toLowerCase()} settings and data here.</p>
         </div>
-        <button onClick={openAdd} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
-          + Add New
-        </button>
+        {tab !== 'business-owners' && tab !== 'business-approvals' && (
+          <button onClick={openAdd} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5">
+            + Add New
+          </button>
+        )}
       </div>
 
       {isCategoriesTab ? (
@@ -619,7 +714,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                     onClick={() => setEditingRow(row)} 
                     className="flex-1 py-2 text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-bold transition-colors"
                   >
-                    View Profile
+                    Edit
                   </button>
                   <button 
                     onClick={() => handleDelete(row)}
@@ -764,7 +859,9 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                           </Link>
                         )}
                         <button onClick={() => openEdit(row)} className="px-3 py-1.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-xs font-bold">Edit</button>
-                        <button onClick={() => handleDelete(row)} className="px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xs font-bold">Delete</button>
+                        {tab !== 'business-owners' && tab !== 'business-approvals' && (
+                          <button onClick={() => handleDelete(row)} className="px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xs font-bold">Delete</button>
+                        )}
                       </div>
                     </td>
                   </motion.tr>
@@ -828,85 +925,91 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
               
               {/* Form Body - Scrollable */}
               <div className="p-8 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50 rounded-b-[2.5rem] relative z-20">
-                {(tab === 'business-management' || tab === 'business-approvals') ? (
+                {tab === 'business-approvals' ? (
+                  <div className="max-w-xl mx-auto w-full">
+                      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                         <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <CheckCircle2 size={22} className="text-emerald-500"/> Verification Gate
+                         </h4>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div>
+                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Approval</label>
+                               <select
+                                 className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 font-bold text-slate-800 bg-slate-50/50 outline-none focus:ring-4 focus:ring-emerald-500/15 shadow-inner transition-all hover:border-emerald-300"
+                                 value={editFormData['Approval Status'] ?? editingRow['Approval Status'] ?? 'Pending'}
+                                 onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Approval Status': e.target.value }))}
+                               >
+                                 <option value="Approved">Approved</option>
+                                 <option value="Pending">Pending</option>
+                                 <option value="Rejected">Rejected</option>
+                               </select>
+                            </div>
+                            <div>
+                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">KYC Check</label>
+                               <select
+                                 className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 font-bold text-slate-800 bg-slate-50/50 outline-none focus:ring-4 focus:ring-emerald-500/15 shadow-inner transition-all hover:border-emerald-300"
+                                 value={editFormData['Status'] ?? editingRow['Status'] ?? 'Pending'}
+                                 onChange={e => setEditFormData((prev: any) => ({ ...prev, Status: e.target.value }))}
+                               >
+                                 <option value="Verified">Verified</option>
+                                 <option value="Pending">Pending</option>
+                               </select>
+                            </div>
+                         </div>
+                      </div>
+                  </div>
+                ) : tab === 'business-management' ? (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                      {/* Left Column: Business & Owner Details */}
                      <div className="lg:col-span-7 space-y-6">
-                        {/* Business Info */}
+                        {/* Business & Legal Details */}
                         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
                           <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
-                             <Building2 size={22} className="text-blue-500"/> Business Details
+                             <Building2 size={22} className="text-blue-500"/> Business & Legal Details
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {[
-                              { key: 'Business Name', label: 'Business Name' },
-                              { key: 'Category', label: 'Category' },
-                              { key: 'Business Type', label: 'Business Type' },
-                              { key: 'Founded Year', label: 'Founded Year' },
-                              { key: 'Business Phone', label: 'Business Phone' },
-                              { key: 'WhatsApp', label: 'WhatsApp' },
-                              { key: 'Website', label: 'Website' },
-                              { key: 'Employee Count', label: 'Employee Count' },
-                            ].map(({ key, label }) => (
-                              <div key={key}>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
-                                <input
-                                  type="text"
-                                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
-                                  value={editFormData[key] ?? editingRow[key] ?? ''}
-                                  onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
-                                />
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Legal / KYC Numbers */}
-                          <div className="mt-5 pt-4 border-t border-slate-100">
-                            <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-3">Legal & KYC</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                              {[
-                                { key: 'PAN Number', label: 'PAN Number' },
-                                { key: 'GST Number', label: 'GST Number' },
-                                { key: 'FSSAI Number', label: 'FSSAI Number' },
-                              ].map(({ key, label }) => (
-                                <div key={key}>
-                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
-                                  <input
-                                    type="text"
-                                    className="w-full px-4 py-2.5 rounded-2xl border border-emerald-200 focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-500 outline-none text-sm text-slate-800 font-semibold bg-emerald-50/30 focus:bg-white transition-all shadow-inner"
-                                    value={editFormData[key] ?? editingRow[key] ?? ''}
-                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Location Details */}
-                          <div className="mt-5 pt-4 border-t border-slate-100">
-                            <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-3">Location Details</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              {[
-                                { key: 'Address', label: 'Full Address' },
-                                { key: 'Area', label: 'Area / Locality' },
-                                { key: 'City', label: 'City' },
-                                { key: 'State', label: 'State' },
-                                { key: 'Pincode', label: 'Pincode' },
-                              ].map(({ key, label }) => (
-                                <div key={key}>
-                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
+                              { key: 'Business Name', label: 'Business Registered Name' },
+                              { key: 'Display Name', label: 'Display Name (Brand Name)' },
+                              { key: 'Category', label: 'Primary Category', type: 'select', options: categories.map(c => c.name) },
+                              { key: 'Sub Category', label: 'Sub Category', type: 'select', options: subCategories.map(c => c.name) },
+                              { key: 'PAN Number', label: 'PAN Card Number' },
+                              { key: 'GSTIN Number', label: 'GSTIN Number (Optional)' },
+                            ].map((field: any) => (
+                              <div key={field.key}>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{field.label}</label>
+                                {field.type === 'select' ? (
+                                  <select
+                                    className="w-full px-4 py-2.5 rounded-2xl border border-blue-200 focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold bg-blue-50/30 focus:bg-white transition-all shadow-inner"
+                                    value={editFormData[field.key] ?? editingRow?.[field.key] ?? ''}
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      setEditFormData((prev: any) => {
+                                        const next = { ...prev, [field.key]: val };
+                                        if (field.key === 'Category') next['Sub Category'] = ''; // reset subcategory
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    <option value="" disabled>Select {field.label}</option>
+                                    {field.options.map((opt: string) => (
+                                      <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                    <option value="-">- None -</option>
+                                  </select>
+                                ) : (
                                   <input
                                     type="text"
                                     className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
-                                    value={editFormData[key] ?? editingRow[key] ?? ''}
-                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
+                                    value={editFormData[field.key] ?? editingRow?.[field.key] ?? ''}
+                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [field.key]: e.target.value }))}
                                   />
-                                </div>
-                              ))}
-                            </div>
+                                )}
+                              </div>
+                            ))}
                           </div>
                           <div className="mt-5">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Description</label>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Business Description</label>
                             <textarea
                               className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all h-24 custom-scrollbar shadow-inner resize-none"
                               value={editFormData['Description'] ?? editingRow['Description'] ?? ''}
@@ -915,22 +1018,75 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                           </div>
                         </div>
 
-                        {/* Owner Info */}
+                        {/* Location Details */}
                         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
                           <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
-                            <Users size={22} className="text-indigo-500"/> Owner Details
+                             <MapPin size={22} className="text-red-500"/> Location & Geolocation
                           </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {[
-                              { key: 'Owner', label: 'Owner Name' },
-                              { key: 'Owner Email', label: 'Owner Email' },
-                              { key: 'Owner Phone', label: 'Owner Phone' },
+                              { key: 'City', label: 'City' },
+                              { key: 'Area', label: 'Area / Locality' },
+                              { key: 'Pincode', label: 'Postal / Zip Code' },
+                              { key: 'Service Radius', label: 'Service Radius (km)' },
+                              { key: 'Location Type', label: 'Location Type', type: 'select', options: ['Store / Retail', 'Office', 'Home Service', 'Online Only', 'Training Center'] },
+                              { key: 'Map URL', label: 'Google Maps Link' },
+                            ].map((field: any) => (
+                              <div key={field.key}>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{field.label}</label>
+                                {field.type === 'select' ? (
+                                  <select
+                                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-red-500/15 focus:border-red-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                    value={editFormData[field.key] ?? editingRow[field.key] ?? ''}
+                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [field.key]: e.target.value }))}
+                                  >
+                                    <option value="" disabled>Select Location Type</option>
+                                    {field.options.map((opt: string) => (
+                                      <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                    <option value="Store">Store</option>
+                                  </select>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-red-500/15 focus:border-red-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                    value={editFormData[field.key] ?? editingRow[field.key] ?? ''}
+                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [field.key]: e.target.value }))}
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-5">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Door Number / Building / Street Address</label>
+                            <input
+                               type="text"
+                               className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-red-500/15 focus:border-red-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                               value={editFormData['Address'] ?? editingRow['Address'] ?? ''}
+                               onChange={e => setEditFormData((prev: any) => ({ ...prev, Address: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Contact Details & Social Handles */}
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                          <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <PhoneCall size={22} className="text-green-500"/> Contact Details & Social Handles
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                            {[
+                              { key: 'WhatsApp', label: 'WhatsApp Line' },
+                              { key: 'Website', label: 'Official Website' },
+                              { key: 'Facebook URL', label: 'Facebook Profile' },
+                              { key: 'Instagram URL', label: 'Instagram Handle' },
+                              { key: 'Twitter URL', label: 'Twitter Handle' },
+                              { key: 'LinkedIn URL', label: 'LinkedIn Profile' },
                             ].map(({ key, label }) => (
                               <div key={key}>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
                                 <input
                                   type="text"
-                                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-green-500/15 focus:border-green-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
                                   value={editFormData[key] ?? editingRow[key] ?? ''}
                                   onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
                                 />
@@ -938,10 +1094,143 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                             ))}
                           </div>
                         </div>
+
+                        {/* Owner Details */}
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                          <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <Users size={22} className="text-pink-500"/> Owner Details
+                          </h4>
+                          <div className="grid grid-cols-2 gap-5">
+                             {[
+                               { key: 'Owner', label: 'Owner Name' },
+                               { key: 'Owner Email', label: 'Owner Email' },
+                               { key: 'Owner Phone', label: 'Owner Phone' },
+                               { key: 'Owner Role', label: 'Owner Role' },
+                             ].map(({ key, label }) => (
+                               <div key={key}>
+                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
+                                 <input
+                                   type="text"
+                                   className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-pink-500/15 focus:border-pink-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                   value={editFormData[key] ?? editingRow[key] ?? ''}
+                                   onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
+                                 />
+                               </div>
+                             ))}
+                          </div>
+                        </div>
+
                      </div>
 
-                     {/* Right Column: Status & SEO */}
+                     {/* Right Column: Remaining Steps & SEO */}
                      <div className="lg:col-span-5 space-y-6">
+                        {/* Working Hours */}
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                          <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <Clock size={22} className="text-orange-500"/> Business Working Hours
+                          </h4>
+                          <div className="grid grid-cols-1 gap-5">
+                             <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Working Days (Mon - Sat Hours)</label>
+                                <input
+                                  type="text"
+                                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-orange-500/15 focus:border-orange-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                  value={editFormData['Working Days'] ?? editingRow['Working Days'] ?? ''}
+                                  onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Working Days': e.target.value }))}
+                                />
+                             </div>
+                             <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Sunday Hours</label>
+                                <input
+                                  type="text"
+                                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-orange-500/15 focus:border-orange-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                  value={editFormData['Sunday Hours'] ?? editingRow['Sunday Hours'] ?? ''}
+                                  onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Sunday Hours': e.target.value }))}
+                                />
+                             </div>
+                          </div>
+                        </div>
+
+                        {/* Services Offered */}
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                          <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <Tag size={22} className="text-purple-500"/> Offered Services
+                          </h4>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Services Offered (Comma Separated)</label>
+                            <textarea
+                              className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-purple-500/15 focus:border-purple-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all h-24 custom-scrollbar shadow-inner resize-none"
+                              value={editFormData['Services Offered'] ?? editingRow['Services Offered'] ?? ''}
+                              onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Services Offered': e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Media, Logos & Gallery */}
+                        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                          <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
+                            <Image size={22} className="text-pink-500"/> Media & Logos
+                          </h4>
+                          <div className="grid grid-cols-1 gap-5">
+                            {[
+                              { key: 'Logo URL', label: 'Business Logo URL' },
+                              { key: 'Cover Banner URL', label: 'Cover Banner URL' },
+                            ].map(({ key, label }) => {
+                              const val = editFormData[key] ?? editingRow[key] ?? '';
+                              return (
+                              <div key={key}>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    className="flex-1 w-full px-4 py-2.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-pink-500/15 focus:border-pink-500 outline-none text-sm text-slate-800 font-semibold bg-slate-50/50 focus:bg-white transition-all shadow-inner"
+                                    value={val}
+                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
+                                  />
+                                  {val && (
+                                    <a href={`http://localhost:8000${val}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-colors border border-slate-200 shadow-sm shrink-0" title="View Image">
+                                      <ExternalLink size={18} className="text-pink-600" />
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            )})}
+                          </div>
+                        </div>
+
+                        {/* Verification Documents */}
+                        <div className="bg-emerald-50/30 p-6 rounded-3xl border border-emerald-100 shadow-sm">
+                          <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-emerald-100 pb-4">
+                            <FileText size={22} className="text-emerald-500"/> Verification Documents
+                          </h4>
+                          <div className="grid grid-cols-1 gap-5">
+                            {[
+                              { key: 'Registration Certificate URL', label: 'Registration Certificate URL' },
+                              { key: 'GST Certificate URL', label: 'GST Certificate URL' },
+                            ].map(({ key, label }) => {
+                              const val = editFormData[key] ?? editingRow[key] ?? '';
+                              return (
+                              <div key={key}>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">{label}</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    className="flex-1 w-full px-4 py-2.5 rounded-2xl border border-emerald-200 focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-500 outline-none text-sm text-slate-800 font-semibold bg-white transition-all shadow-inner"
+                                    value={val}
+                                    onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
+                                  />
+                                  {val && (
+                                    <a href={`http://localhost:8000${val}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-colors border border-slate-200 shadow-sm shrink-0" title="View Document">
+                                      <ExternalLink size={18} className="text-emerald-600" />
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            )})}
+                          </div>
+                        </div>
+
+                        {/* Status */}
                         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                            <h4 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-50 pb-4">
                               <CheckCircle2 size={22} className="text-emerald-500"/> Verification Gate
@@ -983,19 +1272,19 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                            <div className="space-y-4 relative z-10">
                              <div>
                                <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-1.5 ml-1">Custom Slug</label>
-                               <input type="text" placeholder="e.g. akash-textiles-trichy" value={editFormData['slug'] ?? editingRow['slug'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, slug: e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all" />
+                               <input type="text" placeholder="e.g. akash-textiles-trichy" value={editFormData['Custom Slug'] ?? editingRow['Custom Slug'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Custom Slug': e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all" />
                              </div>
                              <div>
                                <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-1.5 ml-1">Meta Title</label>
-                               <input type="text" placeholder={`Default: ${editingRow['Business Name']} in ${editingRow['City']} - Top ${editingRow['Category']}`} value={editFormData['seo_title'] ?? editingRow['seo_title'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, seo_title: e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all" />
+                               <input type="text" placeholder={`Default: ${editingRow['Business Name']} in ${editingRow['City']} - Top ${editingRow['Category']}`} value={editFormData['Meta Title'] ?? editingRow['Meta Title'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Meta Title': e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all" />
                              </div>
                              <div>
                                <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-1.5 ml-1">Meta Description</label>
-                               <textarea placeholder={`Default: Contact ${editingRow['Business Name']} in ${editingRow['City']}. Best ${editingRow['Category']} services.`} value={editFormData['seo_description'] ?? editingRow['seo_description'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, seo_description: e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all h-20 custom-scrollbar resize-none" />
+                               <textarea placeholder={`Default: Contact ${editingRow['Business Name']} in ${editingRow['City']}. Best ${editingRow['Category']} services.`} value={editFormData['Meta Description'] ?? editingRow['Meta Description'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, 'Meta Description': e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all h-20 custom-scrollbar resize-none" />
                              </div>
                              <div>
                                <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-1.5 ml-1">SEO Keywords</label>
-                               <input type="text" placeholder="e.g. textiles, clothing, trichy shopping" value={editFormData['seo_keywords'] ?? editingRow['seo_keywords'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, seo_keywords: e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all" />
+                               <input type="text" placeholder="e.g. textiles, clothing, trichy shopping" value={editFormData['SEO Keywords'] ?? editingRow['SEO Keywords'] ?? ''} onChange={e => setEditFormData((prev: any) => ({ ...prev, 'SEO Keywords': e.target.value }))} className="w-full px-4 py-2.5 rounded-2xl border border-purple-200 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-sm font-semibold text-slate-800 bg-white shadow-inner transition-all" />
                              </div>
                            </div>
                         </div>
@@ -1003,7 +1292,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {Object.keys(editingRow).filter(k => k !== 'id' && k !== 'owner_id').map((col) => {
+                    {columns.filter(k => k !== 'id' && k !== 'owner_id' && k !== 'Actions').map((col) => {
                       const val = editingRow[col];
                       const isObject = typeof val === 'object' && val !== null;
                       return (
@@ -1077,6 +1366,49 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                   className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/30"
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showBulkDeleteConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setShowBulkDeleteConfirm(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center"
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                <AlertCircle size={32} />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2">Delete {selectedRows.size} items?</h3>
+              <p className="text-sm text-slate-500 mb-8">This action cannot be undone. Are you sure you want to permanently delete the selected records?</p>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowBulkDeleteConfirm(false)}
+                  disabled={isDeletingBulk}
+                  className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={executeBulkDelete}
+                  disabled={isDeletingBulk}
+                  className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isDeletingBulk ? 'Deleting...' : 'Delete All'}
                 </button>
               </div>
             </motion.div>

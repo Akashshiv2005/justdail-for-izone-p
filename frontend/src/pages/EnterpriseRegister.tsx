@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Building2, ShieldCheck, CheckCircle2, AlertCircle, Phone, Mail, Lock, 
-  MapPin, Clock, Award, FileText, Upload, CreditCard, ChevronRight, ChevronLeft, Check, Sparkles, Globe, DollarSign, Image
+  MapPin, Clock, Award, FileText, Upload, CreditCard, ChevronRight, ChevronLeft, Check, Sparkles, Globe, DollarSign, Image, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +15,10 @@ export default function EnterpriseRegister() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
+  // Custom dropdown states
+  const [isCatOpen, setIsCatOpen] = useState(false);
+  const [isSubCatOpen, setIsSubCatOpen] = useState(false);
 
   const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
@@ -277,13 +281,33 @@ export default function EnterpriseRegister() {
       data.append('phone', formData.phone);
       data.append('password', formData.password);
       data.append('business_name', formData.businessName);
-      data.append('business_type', formData.businessType);
-      data.append('category', formData.category);
-      data.append('city', formData.city);
+      data.append('display_name', formData.displayName || '');
+      data.append('business_type', formData.businessType || '');
+      data.append('category', formData.category || '');
+      data.append('sub_category', formData.subCategory || '');
+      data.append('description', formData.description || '');
+      data.append('city', formData.city || '');
+      data.append('area', formData.area || '');
+      data.append('pincode', formData.postalCode || '');
       data.append('address', formData.address || `${formData.doorNumber}, ${formData.street}, ${formData.area}`);
-      data.append('pan_number', formData.panNumber);
-      data.append('gst_number', formData.gstNumber);
-      data.append('description', formData.description);
+      data.append('service_radius', formData.serviceRadius || '10');
+      data.append('location_type', formData.locationType || 'Store');
+      data.append('map_url', formData.mapLink || '');
+      data.append('whatsapp', formData.contactWhatsapp || '');
+      data.append('website', formData.website || '');
+      data.append('facebook', formData.facebook || '');
+      data.append('instagram', formData.instagram || '');
+      data.append('twitter', formData.twitter || '');
+      data.append('linkedin', formData.linkedin || '');
+      data.append('pan_number', formData.panNumber || '');
+      data.append('gst_number', formData.gstNumber || '');
+      data.append('working_days', formData.mondayHours ? 'Mon-Sat' : '');
+      data.append('sunday_hours', formData.sundayHours || '');
+      data.append('services_offered', formData.servicesOffered || '');
+      data.append('seo_slug', formData.seoSlug || '');
+      data.append('seo_title', formData.seoTitle || '');
+      data.append('seo_description', formData.seoDescription || '');
+      data.append('seo_keywords', formData.seoKeywords || '');
 
       if (formData.docReg) data.append('business_reg_doc', formData.docReg);
       if (formData.docPan) data.append('pan_doc', formData.docPan);
@@ -323,7 +347,7 @@ export default function EnterpriseRegister() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16">
       {/* Top Header */}
       <header className="bg-white border-b border-slate-200 py-4 px-6 sticky top-0 z-40 shadow-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -458,27 +482,62 @@ export default function EnterpriseRegister() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
+                  <div className="relative">
                     <label className="block text-xs font-bold text-slate-700 mb-1">Primary Category *</label>
-                    <select required value={formData.category} onChange={(e) => {
-                      const newCategory = e.target.value;
-                      setFormData((prev: any) => ({ ...prev, category: newCategory, subCategory: '' })); // Reset subcategory on category change
-                    }} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white">
-                      <option value="" disabled>Select a Category</option>
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.name}>{cat.name}</option>
-                      ))}
-                    </select>
+                    <div 
+                      className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white flex justify-between items-center cursor-pointer"
+                      onClick={() => { setIsCatOpen(!isCatOpen); setIsSubCatOpen(false); }}
+                    >
+                      <span className={formData.category ? 'text-slate-900' : 'text-slate-500'}>
+                        {formData.category || 'Select a Category'}
+                      </span>
+                      <ChevronDown size={16} className={`text-slate-500 transition-transform ${isCatOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {isCatOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                        {categories.map(cat => (
+                          <div 
+                            key={cat.id} 
+                            className="px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-colors"
+                            onClick={() => {
+                              setFormData((prev: any) => ({ ...prev, category: cat.name, subCategory: '' }));
+                              setIsCatOpen(false);
+                            }}
+                          >
+                            {cat.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-xs font-bold text-slate-700 mb-1">Sub Category</label>
-                    <select value={formData.subCategory} onChange={(e) => handleInputChange('subCategory', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none bg-white" disabled={!formData.category}>
-                      <option value="" disabled>Select a Sub Category</option>
-                      {subCategories.map(sub => (
-                        <option key={sub.id} value={sub.name}>{sub.name}</option>
-                      ))}
-                    </select>
+                    <div 
+                      className={`w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white flex justify-between items-center ${formData.category ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+                      onClick={() => { if (formData.category) { setIsSubCatOpen(!isSubCatOpen); setIsCatOpen(false); } }}
+                    >
+                      <span className={formData.subCategory ? 'text-slate-900' : 'text-slate-500'}>
+                        {formData.subCategory || 'Select a Sub Category'}
+                      </span>
+                      <ChevronDown size={16} className={`text-slate-500 transition-transform ${isSubCatOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {isSubCatOpen && formData.category && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                        {subCategories.map(sub => (
+                          <div 
+                            key={sub.id} 
+                            className="px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition-colors"
+                            onClick={() => {
+                              handleInputChange('subCategory', sub.name);
+                              setIsSubCatOpen(false);
+                            }}
+                          >
+                            {sub.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -612,10 +671,6 @@ export default function EnterpriseRegister() {
                     <input type="checkbox" checked={formData.is24x7} onChange={(e) => handleInputChange('is24x7', e.target.checked)} className="w-4 h-4 text-blue-600 rounded" />
                     Open 24 Hours (24x7)
                   </label>
-                  <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
-                    <input type="checkbox" checked={formData.hasEmergency} onChange={(e) => handleInputChange('hasEmergency', e.target.checked)} className="w-4 h-4 text-blue-600 rounded" />
-                    Emergency Services Available
-                  </label>
                 </div>
               </div>
             )}
@@ -729,8 +784,8 @@ export default function EnterpriseRegister() {
                     <div className="grid grid-cols-2 gap-2">
                       <p><span className="font-bold text-slate-600">Business Name:</span> {formData.businessName || <span className="text-red-400 italic">Not filled</span>}</p>
                       <p><span className="font-bold text-slate-600">Category:</span> {formData.category || <span className="text-red-400 italic">Not filled</span>}</p>
-                      <p><span className="font-bold text-slate-600">Business Type:</span> {formData.businessType || <span className="text-red-400 italic">Not filled</span>}</p>
-                      <p><span className="font-bold text-slate-600">Founded Year:</span> {formData.foundedYear || 'N/A'}</p>
+                      <p><span className="font-bold text-slate-600">Sub Category:</span> {formData.subCategory || 'N/A'}</p>
+                      <p><span className="font-bold text-slate-600">Display Name:</span> {formData.displayName || 'N/A'}</p>
                       <p><span className="font-bold text-slate-600">PAN:</span> {formData.panNumber || 'N/A'}</p>
                       <p><span className="font-bold text-slate-600">GST:</span> {formData.gstNumber || 'N/A'}</p>
                     </div>
@@ -742,7 +797,7 @@ export default function EnterpriseRegister() {
                 <div>
                   <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-2">Location</h3>
                   <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 text-sm">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 text-slate-900">
                       <p><span className="font-bold text-slate-600">City:</span> {formData.city || <span className="text-red-400 italic">Not filled</span>}</p>
                       <p><span className="font-bold text-slate-600">Area:</span> {formData.area || 'N/A'}</p>
                       <p><span className="font-bold text-slate-600">State:</span> {formData.state || 'N/A'}</p>

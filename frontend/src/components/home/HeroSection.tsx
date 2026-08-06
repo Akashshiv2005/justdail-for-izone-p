@@ -25,7 +25,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, scale: 0.9 }} 
             animate={{ opacity: 1, scale: 1 }} 
             transition={{ duration: 0.7, type: "spring" }} 
-            className="text-5xl md:text-6xl lg:text-[64px] font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1] relative z-20"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-[64px] font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.1] relative z-20 break-words"
           >
             Find. Connect. Grow<br/>
             All Local, All in <span className="text-blue-600 drop-shadow-md">Biz</span><span className="text-orange-500 drop-shadow-md">Dial</span>
@@ -41,7 +41,7 @@ export default function HeroSection() {
 
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
             <span className="text-[11px] font-bold text-slate-900 mr-2">Popular Searches:</span>
-            {['Restaurants', 'Hospitals', 'Mobile Shops', 'Gyms', 'Beauty Salons', 'Electricians', 'More ⌄'].map((tag) => (
+            {['Restaurants', 'Hospitals', 'Mobile Shops', 'Gyms', 'Beauty Salons', 'Electricians', 'More'].map((tag) => (
               <span key={tag} className="px-4 py-1.5 bg-white rounded-full text-[11px] font-semibold text-slate-600 hover:text-blue-600 cursor-pointer transition-colors shadow-sm border border-slate-100">
                 {tag}
               </span>

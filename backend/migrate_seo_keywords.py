@@ -14,25 +14,25 @@ Run this ONCE, after pulling this update and before starting the server:
     python migrate_seo_keywords.py
 """
 from sqlalchemy import inspect, text
-from database import engine, Base
+from app.database import engine, Base
 
 # Import all models so Base.metadata knows about every table before create_all
-import models.brand
-import models.business
-import models.business_category_mapping
-import models.business_extras
-import models.business_service_mapping
-import models.category
-import models.category_keyword
-import models.location
-import models.master_service
-import models.review
-import models.search_config
-import models.seo_models
-import models.subcategory
-import models.testimonial
-import models.user
-import models.verification_models
+import app.models.brand
+import app.models.business
+import app.models.business_category_mapping
+import app.models.business_extras
+import app.models.business_service_mapping
+import app.models.category
+import app.models.category_keyword
+import app.models.location
+import app.models.master_service
+import app.models.review
+import app.models.search_config
+import app.models.seo_models
+import app.models.subcategory
+import app.models.testimonial
+import app.models.user
+import app.models.verification_models
 
 
 def main():

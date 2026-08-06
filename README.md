@@ -59,16 +59,15 @@ venv\Scripts\activate
 # Install all required Python dependencies
 pip install -r requirements.txt
 
-# Copy the example env file and update it with your own Postgres credentials
-cp .env.example .env   # on Windows: copy .env.example .env
+# 3. Create the Database Schema
+# Start the server once to automatically create the 'bizdial' schema in Postgres
+python -m uvicorn app.main:app--reload --port 8000
+# (Press CTRL+C after you see "Application startup complete")
 
-# Generate initial database migrations (if not already created)
-alembic revision --autogenerate -m "Initial migration"
-
-# Run Alembic migrations to create/update database tables
+# 4. Run Alembic migrations to create/update database tables
 alembic upgrade head
 
-# Seed the database with master categories and subcategories (40 categories)
+# 5. Seed the database with master categories and subcategories (40 categories)
 python seed_categories.py
 
 # Seed the database with default admin and owner users
@@ -78,7 +77,7 @@ python seed_users.py
 python master_seed.py
 
 # Start the FastAPI server (runs on port 8000)
-python -m uvicorn main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000
 
 Note on DATABASE_URL: If your Postgres password contains special characters (like @), percent-encode them in the connection string (e.g. @ → %40), or the URL will fail to parse.
 

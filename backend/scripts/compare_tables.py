@@ -5,24 +5,24 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, inspect
-from database import Base, SQLALCHEMY_DATABASE_URL
+from app.database import Base, SQLALCHEMY_DATABASE_URL
 # Import all models to ensure they are registered with Base
-import models.user
-import models.business
-import models.category
-import models.subcategory
-import models.location
-import models.review
-import models.testimonial
-import models.brand
-import models.business_extras
-import models.seo_models
-import models.verification_models
-import models.search_config
-import models.master_service
-import models.business_category_mapping
-import models.business_service_mapping
-import models.category_keyword
+import app.models.user
+import app.models.business
+import app.models.category
+import app.models.subcategory
+import app.models.location
+import app.models.review
+import app.models.testimonial
+import app.models.brand
+import app.models.business_extras
+import app.models.seo_models
+import app.models.verification_models
+import app.models.search_config
+import app.models.master_service
+import app.models.business_category_mapping
+import app.models.business_service_mapping
+import app.models.category_keyword
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 inspector = inspect(engine)

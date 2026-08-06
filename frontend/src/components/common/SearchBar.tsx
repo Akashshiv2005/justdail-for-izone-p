@@ -93,7 +93,7 @@ export default function SearchBar() {
         className="bg-white/90 backdrop-blur-2xl p-2.5 rounded-[1.5rem] shadow-2xl shadow-blue-900/10 border border-white/60 flex flex-col md:flex-row items-center gap-2 max-w-4xl mx-auto w-full hover:bg-white transition-all duration-500 relative z-20"
       >
         {/* Keyword Search */}
-        <div className="flex-1 flex items-center gap-3 px-4 py-3 border-b md:border-b-0 md:border-r border-slate-300/30 w-full hover:bg-slate-50 transition-colors rounded-xl relative">
+        <div className="flex-1 flex items-center gap-3 px-4 py-2.5 border-b md:border-b-0 md:border-r border-slate-300/30 w-full hover:bg-slate-50 transition-colors rounded-t-xl md:rounded-xl relative">
           <Search size={22} className="text-blue-600 shrink-0" />
           <div className="flex flex-col w-full text-left">
             <span className="text-[11px] font-bold text-slate-800">What are you looking for?</span>
@@ -112,7 +112,7 @@ export default function SearchBar() {
         </div>
 
         {/* Location Search */}
-        <div className="flex-1 flex items-center gap-3 px-4 py-3 w-full hover:bg-slate-50 transition-colors rounded-xl">
+        <div className="flex-1 flex items-center gap-3 px-4 py-2.5 w-full hover:bg-slate-50 transition-colors rounded-b-xl md:rounded-xl">
           <MapPin size={22} className="text-orange-500 shrink-0" />
           <div className="flex flex-col w-full text-left">
             <span className="text-[11px] font-bold text-slate-800">Location</span>
@@ -128,16 +128,16 @@ export default function SearchBar() {
         </div>
 
         {/* Search Buttons */}
-        <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-2 shrink-0">
+        <div className="w-full md:w-auto flex flex-row items-center gap-2 shrink-0 px-2 pb-2 md:p-0 mt-2 md:mt-0">
           <button 
             onClick={() => detectLocation()}
-            className="w-full sm:w-auto px-4 py-4 bg-white border border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600 text-slate-700 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+            className="flex-1 sm:flex-none whitespace-nowrap px-3 py-3 md:px-5 md:py-4 bg-white border border-slate-200 hover:bg-orange-50 hover:border-orange-200 hover:text-orange-600 text-slate-700 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm text-sm"
           >
-            {location.loading ? <Loader2 size={18} className="animate-spin" /> : <Navigation size={18} />} Near Me
+            {location.loading ? <Loader2 size={18} className="animate-spin" /> : <Navigation size={18} />} <span className="hidden sm:inline">Near Me</span><span className="sm:hidden text-xs">Locate</span>
           </button>
           <button 
             onClick={handleSearch}
-            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30"
+            className="flex-[2] sm:flex-none whitespace-nowrap px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 text-sm"
           >
             <Search size={18} /> Search
           </button>
