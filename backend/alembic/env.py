@@ -32,7 +32,10 @@ import app.models.business_service_mapping
 import app.models.business_category_mapping
 
 target_metadata = Base.metadata
-config.set_main_option('sqlalchemy.url', SQLALCHEMY_DATABASE_URL)
+
+# Escape % in the URL to avoid Python string formatting errors in Alembic
+_db_url = SQLALCHEMY_DATABASE_URL.replace("%", "%%")
+config.set_main_option('sqlalchemy.url', _db_url)
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
@@ -71,11 +74,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    from app.database import engine as connectable
 
     with connectable.connect() as connection:
         context.configure(
