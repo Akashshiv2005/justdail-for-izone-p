@@ -38,33 +38,33 @@ def upgrade() -> None:
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('display_order', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_categories_id'), 'categories', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_categories_name'), 'categories', ['name'], unique=True, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_categories_slug'), 'categories', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_categories_id'), 'categories', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_categories_name'), 'categories', ['name'], unique=True, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_categories_slug'), 'categories', ['slug'], unique=True, schema='bizdial1')
     op.create_table('countries',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_countries_id'), 'countries', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_countries_name'), 'countries', ['name'], unique=True, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_countries_slug'), 'countries', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_countries_id'), 'countries', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_countries_name'), 'countries', ['name'], unique=True, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_countries_slug'), 'countries', ['slug'], unique=True, schema='bizdial1')
     op.create_table('location_keywords',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('location_type', sa.String(), nullable=False),
     sa.Column('location_id', sa.Integer(), nullable=False),
     sa.Column('keyword', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_location_keywords_id'), 'location_keywords', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_location_keywords_keyword'), 'location_keywords', ['keyword'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_location_keywords_location_type'), 'location_keywords', ['location_type'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_location_keywords_id'), 'location_keywords', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_location_keywords_keyword'), 'location_keywords', ['keyword'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_location_keywords_location_type'), 'location_keywords', ['location_type'], unique=False, schema='bizdial1')
     op.create_table('location_seo',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('entity_type', sa.String(), nullable=False),
@@ -79,10 +79,10 @@ def upgrade() -> None:
     sa.Column('og_image', sa.String(), nullable=True),
     sa.Column('schema_json', sa.JSON(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_location_seo_entity_type'), 'location_seo', ['entity_type'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_location_seo_id'), 'location_seo', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_location_seo_entity_type'), 'location_seo', ['entity_type'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_location_seo_id'), 'location_seo', ['id'], unique=False, schema='bizdial1')
     op.create_table('location_slugs',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
@@ -90,11 +90,11 @@ def upgrade() -> None:
     sa.Column('entity_id', sa.Integer(), nullable=True),
     sa.Column('category_id', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_location_slugs_entity_type'), 'location_slugs', ['entity_type'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_location_slugs_id'), 'location_slugs', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_location_slugs_slug'), 'location_slugs', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_location_slugs_entity_type'), 'location_slugs', ['entity_type'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_location_slugs_id'), 'location_slugs', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_location_slugs_slug'), 'location_slugs', ['slug'], unique=True, schema='bizdial1')
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
@@ -104,24 +104,24 @@ def upgrade() -> None:
     sa.Column('role', sa.Enum('admin', 'owner', 'customer', name='roleenum'), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_users_email'), 'users', ['email'], unique=True, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_users_id'), 'users', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_users_phone'), 'users', ['phone'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_users_email'), 'users', ['email'], unique=True, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_users_id'), 'users', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_users_phone'), 'users', ['phone'], unique=True, schema='bizdial1')
     op.create_table('states',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
     sa.Column('country_id', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['country_id'], ['bizdial.countries.id'], ),
+    sa.ForeignKeyConstraint(['country_id'], ['bizdial1.countries.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_states_id'), 'states', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_states_name'), 'states', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_states_slug'), 'states', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_states_id'), 'states', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_states_name'), 'states', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_states_slug'), 'states', ['slug'], unique=True, schema='bizdial1')
     op.create_table('subcategories',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=False),
@@ -138,39 +138,39 @@ def upgrade() -> None:
     sa.Column('schema_org_json', sa.String(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('display_order', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['category_id'], ['bizdial.categories.id'], ),
+    sa.ForeignKeyConstraint(['category_id'], ['bizdial1.categories.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_subcategories_category_id'), 'subcategories', ['category_id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_subcategories_id'), 'subcategories', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_subcategories_name'), 'subcategories', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_subcategories_slug'), 'subcategories', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_subcategories_category_id'), 'subcategories', ['category_id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_subcategories_id'), 'subcategories', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_subcategories_name'), 'subcategories', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_subcategories_slug'), 'subcategories', ['slug'], unique=True, schema='bizdial1')
     op.create_table('districts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
     sa.Column('state_id', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['state_id'], ['bizdial.states.id'], ),
+    sa.ForeignKeyConstraint(['state_id'], ['bizdial1.states.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_districts_id'), 'districts', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_districts_name'), 'districts', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_districts_slug'), 'districts', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_districts_id'), 'districts', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_districts_name'), 'districts', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_districts_slug'), 'districts', ['slug'], unique=True, schema='bizdial1')
     op.create_table('master_services',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('subcategory_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['subcategory_id'], ['bizdial.subcategories.id'], ),
+    sa.ForeignKeyConstraint(['subcategory_id'], ['bizdial1.subcategories.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_master_services_id'), 'master_services', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_master_services_name'), 'master_services', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_master_services_subcategory_id'), 'master_services', ['subcategory_id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_master_services_id'), 'master_services', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_master_services_name'), 'master_services', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_master_services_subcategory_id'), 'master_services', ['subcategory_id'], unique=False, schema='bizdial1')
     op.create_table('cities',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
@@ -178,39 +178,39 @@ def upgrade() -> None:
     sa.Column('district_id', sa.Integer(), nullable=True),
     sa.Column('type', sa.String(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['district_id'], ['bizdial.districts.id'], ),
+    sa.ForeignKeyConstraint(['district_id'], ['bizdial1.districts.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_cities_id'), 'cities', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_cities_name'), 'cities', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_cities_slug'), 'cities', ['slug'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_cities_id'), 'cities', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_cities_name'), 'cities', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_cities_slug'), 'cities', ['slug'], unique=False, schema='bizdial1')
     op.create_table('areas',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
     sa.Column('city_id', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['city_id'], ['bizdial.cities.id'], ),
+    sa.ForeignKeyConstraint(['city_id'], ['bizdial1.cities.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_areas_id'), 'areas', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_areas_name'), 'areas', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_areas_slug'), 'areas', ['slug'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_areas_id'), 'areas', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_areas_name'), 'areas', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_areas_slug'), 'areas', ['slug'], unique=False, schema='bizdial1')
     op.create_table('localities',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('slug', sa.String(), nullable=False),
     sa.Column('area_id', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['area_id'], ['bizdial.areas.id'], ),
+    sa.ForeignKeyConstraint(['area_id'], ['bizdial1.areas.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_localities_id'), 'localities', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_localities_name'), 'localities', ['name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_localities_slug'), 'localities', ['slug'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_localities_id'), 'localities', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_localities_name'), 'localities', ['name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_localities_slug'), 'localities', ['slug'], unique=False, schema='bizdial1')
     op.create_table('businesses',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('owner_id', sa.Integer(), nullable=True),
@@ -262,51 +262,51 @@ def upgrade() -> None:
     sa.Column('bookmark_count', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['area_id'], ['bizdial.areas.id'], ),
-    sa.ForeignKeyConstraint(['city_id'], ['bizdial.cities.id'], ),
-    sa.ForeignKeyConstraint(['country_id'], ['bizdial.countries.id'], ),
-    sa.ForeignKeyConstraint(['district_id'], ['bizdial.districts.id'], ),
-    sa.ForeignKeyConstraint(['locality_id'], ['bizdial.localities.id'], ),
-    sa.ForeignKeyConstraint(['owner_id'], ['bizdial.users.id'], ),
-    sa.ForeignKeyConstraint(['state_id'], ['bizdial.states.id'], ),
+    sa.ForeignKeyConstraint(['area_id'], ['bizdial1.areas.id'], ),
+    sa.ForeignKeyConstraint(['city_id'], ['bizdial1.cities.id'], ),
+    sa.ForeignKeyConstraint(['country_id'], ['bizdial1.countries.id'], ),
+    sa.ForeignKeyConstraint(['district_id'], ['bizdial1.districts.id'], ),
+    sa.ForeignKeyConstraint(['locality_id'], ['bizdial1.localities.id'], ),
+    sa.ForeignKeyConstraint(['owner_id'], ['bizdial1.users.id'], ),
+    sa.ForeignKeyConstraint(['state_id'], ['bizdial1.states.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_businesses_area'), 'businesses', ['area'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_businesses_business_name'), 'businesses', ['business_name'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_businesses_category'), 'businesses', ['category'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_businesses_city'), 'businesses', ['city'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_businesses_id'), 'businesses', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_businesses_slug'), 'businesses', ['slug'], unique=True, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_businesses_area'), 'businesses', ['area'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_businesses_business_name'), 'businesses', ['business_name'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_businesses_category'), 'businesses', ['category'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_businesses_city'), 'businesses', ['city'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_businesses_id'), 'businesses', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_businesses_slug'), 'businesses', ['slug'], unique=True, schema='bizdial1')
     op.create_table('business_category_mapping',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=False),
     sa.Column('subcategory_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
-    sa.ForeignKeyConstraint(['category_id'], ['bizdial.categories.id'], ),
-    sa.ForeignKeyConstraint(['subcategory_id'], ['bizdial.subcategories.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
+    sa.ForeignKeyConstraint(['category_id'], ['bizdial1.categories.id'], ),
+    sa.ForeignKeyConstraint(['subcategory_id'], ['bizdial1.subcategories.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_business_category_mapping_business_id'), 'business_category_mapping', ['business_id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_business_category_mapping_category_id'), 'business_category_mapping', ['category_id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_business_category_mapping_id'), 'business_category_mapping', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_business_category_mapping_subcategory_id'), 'business_category_mapping', ['subcategory_id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_business_category_mapping_business_id'), 'business_category_mapping', ['business_id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_business_category_mapping_category_id'), 'business_category_mapping', ['category_id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_business_category_mapping_id'), 'business_category_mapping', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_business_category_mapping_subcategory_id'), 'business_category_mapping', ['subcategory_id'], unique=False, schema='bizdial1')
     op.create_table('business_service_mappings',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=False),
     sa.Column('master_service_id', sa.Integer(), nullable=False),
     sa.Column('price', sa.Float(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
-    sa.ForeignKeyConstraint(['master_service_id'], ['bizdial.master_services.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
+    sa.ForeignKeyConstraint(['master_service_id'], ['bizdial1.master_services.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_business_service_mappings_business_id'), 'business_service_mappings', ['business_id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_business_service_mappings_id'), 'business_service_mappings', ['id'], unique=False, schema='bizdial')
-    op.create_index(op.f('ix_bizdial_business_service_mappings_master_service_id'), 'business_service_mappings', ['master_service_id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_business_service_mappings_business_id'), 'business_service_mappings', ['business_id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_business_service_mappings_id'), 'business_service_mappings', ['id'], unique=False, schema='bizdial1')
+    op.create_index(op.f('ix_bizdial_business_service_mappings_master_service_id'), 'business_service_mappings', ['master_service_id'], unique=False, schema='bizdial1')
     op.create_table('gallery_images',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -314,11 +314,11 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=True),
     sa.Column('category', sa.String(), nullable=True),
     sa.Column('views_count', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_gallery_images_id'), 'gallery_images', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_gallery_images_id'), 'gallery_images', ['id'], unique=False, schema='bizdial1')
     op.create_table('invoices',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -326,11 +326,11 @@ def upgrade() -> None:
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('status', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_invoices_id'), 'invoices', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_invoices_id'), 'invoices', ['id'], unique=False, schema='bizdial1')
     op.create_table('leads',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -339,11 +339,11 @@ def upgrade() -> None:
     sa.Column('service_interest', sa.String(), nullable=True),
     sa.Column('status', sa.Enum('pending', 'contacted', 'converted', name='leadstatus'), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_leads_id'), 'leads', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_leads_id'), 'leads', ['id'], unique=False, schema='bizdial1')
     op.create_table('products',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -352,11 +352,11 @@ def upgrade() -> None:
     sa.Column('price', sa.Float(), nullable=True),
     sa.Column('stock_quantity', sa.Integer(), nullable=True),
     sa.Column('image_url', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_products_id'), 'products', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_products_id'), 'products', ['id'], unique=False, schema='bizdial1')
     op.create_table('promotions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -365,11 +365,11 @@ def upgrade() -> None:
     sa.Column('budget', sa.Float(), nullable=True),
     sa.Column('clicks', sa.Integer(), nullable=True),
     sa.Column('status', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_promotions_id'), 'promotions', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_promotions_id'), 'promotions', ['id'], unique=False, schema='bizdial1')
     op.create_table('reviews',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -379,12 +379,12 @@ def upgrade() -> None:
     sa.Column('moderation_status', sa.String(), nullable=True),
     sa.Column('toxicity_score', sa.Float(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['bizdial.users.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['bizdial1.users.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_reviews_id'), 'reviews', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_reviews_id'), 'reviews', ['id'], unique=False, schema='bizdial1')
     op.create_table('services',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -392,11 +392,11 @@ def upgrade() -> None:
     sa.Column('duration', sa.String(), nullable=True),
     sa.Column('base_price', sa.Float(), nullable=True),
     sa.Column('popularity_score', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_services_id'), 'services', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_services_id'), 'services', ['id'], unique=False, schema='bizdial1')
     op.create_table('staff',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -405,11 +405,11 @@ def upgrade() -> None:
     sa.Column('email', sa.String(), nullable=True),
     sa.Column('phone', sa.String(), nullable=True),
     sa.Column('status', sa.String(), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_staff_id'), 'staff', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_staff_id'), 'staff', ['id'], unique=False, schema='bizdial1')
     op.create_table('support_tickets',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('business_id', sa.Integer(), nullable=True),
@@ -418,101 +418,101 @@ def upgrade() -> None:
     sa.Column('message', sa.String(), nullable=True),
     sa.Column('status', sa.String(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.ForeignKeyConstraint(['business_id'], ['bizdial.businesses.id'], ),
+    sa.ForeignKeyConstraint(['business_id'], ['bizdial1.businesses.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    schema='bizdial'
+    schema='bizdial1'
     )
-    op.create_index(op.f('ix_bizdial_support_tickets_id'), 'support_tickets', ['id'], unique=False, schema='bizdial')
+    op.create_index(op.f('ix_bizdial_support_tickets_id'), 'support_tickets', ['id'], unique=False, schema='bizdial1')
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_index(op.f('ix_bizdial_support_tickets_id'), table_name='support_tickets', schema='bizdial')
-    op.drop_table('support_tickets', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_staff_id'), table_name='staff', schema='bizdial')
-    op.drop_table('staff', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_services_id'), table_name='services', schema='bizdial')
-    op.drop_table('services', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_reviews_id'), table_name='reviews', schema='bizdial')
-    op.drop_table('reviews', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_promotions_id'), table_name='promotions', schema='bizdial')
-    op.drop_table('promotions', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_products_id'), table_name='products', schema='bizdial')
-    op.drop_table('products', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_leads_id'), table_name='leads', schema='bizdial')
-    op.drop_table('leads', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_invoices_id'), table_name='invoices', schema='bizdial')
-    op.drop_table('invoices', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_gallery_images_id'), table_name='gallery_images', schema='bizdial')
-    op.drop_table('gallery_images', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_service_mappings_master_service_id'), table_name='business_service_mappings', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_service_mappings_id'), table_name='business_service_mappings', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_service_mappings_business_id'), table_name='business_service_mappings', schema='bizdial')
-    op.drop_table('business_service_mappings', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_category_mapping_subcategory_id'), table_name='business_category_mapping', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_category_mapping_id'), table_name='business_category_mapping', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_category_mapping_category_id'), table_name='business_category_mapping', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_business_category_mapping_business_id'), table_name='business_category_mapping', schema='bizdial')
-    op.drop_table('business_category_mapping', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_businesses_slug'), table_name='businesses', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_businesses_id'), table_name='businesses', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_businesses_city'), table_name='businesses', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_businesses_category'), table_name='businesses', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_businesses_business_name'), table_name='businesses', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_businesses_area'), table_name='businesses', schema='bizdial')
-    op.drop_table('businesses', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_localities_slug'), table_name='localities', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_localities_name'), table_name='localities', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_localities_id'), table_name='localities', schema='bizdial')
-    op.drop_table('localities', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_areas_slug'), table_name='areas', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_areas_name'), table_name='areas', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_areas_id'), table_name='areas', schema='bizdial')
-    op.drop_table('areas', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_cities_slug'), table_name='cities', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_cities_name'), table_name='cities', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_cities_id'), table_name='cities', schema='bizdial')
-    op.drop_table('cities', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_master_services_subcategory_id'), table_name='master_services', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_master_services_name'), table_name='master_services', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_master_services_id'), table_name='master_services', schema='bizdial')
-    op.drop_table('master_services', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_districts_slug'), table_name='districts', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_districts_name'), table_name='districts', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_districts_id'), table_name='districts', schema='bizdial')
-    op.drop_table('districts', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_subcategories_slug'), table_name='subcategories', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_subcategories_name'), table_name='subcategories', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_subcategories_id'), table_name='subcategories', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_subcategories_category_id'), table_name='subcategories', schema='bizdial')
-    op.drop_table('subcategories', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_states_slug'), table_name='states', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_states_name'), table_name='states', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_states_id'), table_name='states', schema='bizdial')
-    op.drop_table('states', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_users_phone'), table_name='users', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_users_id'), table_name='users', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_users_email'), table_name='users', schema='bizdial')
-    op.drop_table('users', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_slugs_slug'), table_name='location_slugs', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_slugs_id'), table_name='location_slugs', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_slugs_entity_type'), table_name='location_slugs', schema='bizdial')
-    op.drop_table('location_slugs', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_seo_id'), table_name='location_seo', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_seo_entity_type'), table_name='location_seo', schema='bizdial')
-    op.drop_table('location_seo', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_keywords_location_type'), table_name='location_keywords', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_keywords_keyword'), table_name='location_keywords', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_location_keywords_id'), table_name='location_keywords', schema='bizdial')
-    op.drop_table('location_keywords', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_countries_slug'), table_name='countries', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_countries_name'), table_name='countries', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_countries_id'), table_name='countries', schema='bizdial')
-    op.drop_table('countries', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_categories_slug'), table_name='categories', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_categories_name'), table_name='categories', schema='bizdial')
-    op.drop_index(op.f('ix_bizdial_categories_id'), table_name='categories', schema='bizdial')
-    op.drop_table('categories', schema='bizdial')
+    op.drop_index(op.f('ix_bizdial_support_tickets_id'), table_name='support_tickets', schema='bizdial1')
+    op.drop_table('support_tickets', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_staff_id'), table_name='staff', schema='bizdial1')
+    op.drop_table('staff', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_services_id'), table_name='services', schema='bizdial1')
+    op.drop_table('services', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_reviews_id'), table_name='reviews', schema='bizdial1')
+    op.drop_table('reviews', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_promotions_id'), table_name='promotions', schema='bizdial1')
+    op.drop_table('promotions', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_products_id'), table_name='products', schema='bizdial1')
+    op.drop_table('products', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_leads_id'), table_name='leads', schema='bizdial1')
+    op.drop_table('leads', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_invoices_id'), table_name='invoices', schema='bizdial1')
+    op.drop_table('invoices', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_gallery_images_id'), table_name='gallery_images', schema='bizdial1')
+    op.drop_table('gallery_images', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_service_mappings_master_service_id'), table_name='business_service_mappings', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_service_mappings_id'), table_name='business_service_mappings', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_service_mappings_business_id'), table_name='business_service_mappings', schema='bizdial1')
+    op.drop_table('business_service_mappings', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_category_mapping_subcategory_id'), table_name='business_category_mapping', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_category_mapping_id'), table_name='business_category_mapping', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_category_mapping_category_id'), table_name='business_category_mapping', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_business_category_mapping_business_id'), table_name='business_category_mapping', schema='bizdial1')
+    op.drop_table('business_category_mapping', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_businesses_slug'), table_name='businesses', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_businesses_id'), table_name='businesses', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_businesses_city'), table_name='businesses', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_businesses_category'), table_name='businesses', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_businesses_business_name'), table_name='businesses', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_businesses_area'), table_name='businesses', schema='bizdial1')
+    op.drop_table('businesses', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_localities_slug'), table_name='localities', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_localities_name'), table_name='localities', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_localities_id'), table_name='localities', schema='bizdial1')
+    op.drop_table('localities', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_areas_slug'), table_name='areas', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_areas_name'), table_name='areas', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_areas_id'), table_name='areas', schema='bizdial1')
+    op.drop_table('areas', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_cities_slug'), table_name='cities', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_cities_name'), table_name='cities', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_cities_id'), table_name='cities', schema='bizdial1')
+    op.drop_table('cities', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_master_services_subcategory_id'), table_name='master_services', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_master_services_name'), table_name='master_services', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_master_services_id'), table_name='master_services', schema='bizdial1')
+    op.drop_table('master_services', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_districts_slug'), table_name='districts', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_districts_name'), table_name='districts', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_districts_id'), table_name='districts', schema='bizdial1')
+    op.drop_table('districts', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_subcategories_slug'), table_name='subcategories', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_subcategories_name'), table_name='subcategories', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_subcategories_id'), table_name='subcategories', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_subcategories_category_id'), table_name='subcategories', schema='bizdial1')
+    op.drop_table('subcategories', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_states_slug'), table_name='states', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_states_name'), table_name='states', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_states_id'), table_name='states', schema='bizdial1')
+    op.drop_table('states', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_users_phone'), table_name='users', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_users_id'), table_name='users', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_users_email'), table_name='users', schema='bizdial1')
+    op.drop_table('users', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_slugs_slug'), table_name='location_slugs', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_slugs_id'), table_name='location_slugs', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_slugs_entity_type'), table_name='location_slugs', schema='bizdial1')
+    op.drop_table('location_slugs', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_seo_id'), table_name='location_seo', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_seo_entity_type'), table_name='location_seo', schema='bizdial1')
+    op.drop_table('location_seo', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_keywords_location_type'), table_name='location_keywords', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_keywords_keyword'), table_name='location_keywords', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_location_keywords_id'), table_name='location_keywords', schema='bizdial1')
+    op.drop_table('location_keywords', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_countries_slug'), table_name='countries', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_countries_name'), table_name='countries', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_countries_id'), table_name='countries', schema='bizdial1')
+    op.drop_table('countries', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_categories_slug'), table_name='categories', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_categories_name'), table_name='categories', schema='bizdial1')
+    op.drop_index(op.f('ix_bizdial_categories_id'), table_name='categories', schema='bizdial1')
+    op.drop_table('categories', schema='bizdial1')
     # ### end Alembic commands ###

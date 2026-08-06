@@ -50,7 +50,7 @@ bash
 cd backend
 
 # Create a virtual environment
-python -m venv venv
+py -m venv venv
 
 # Activate the virtual environment (Windows)
 venv\Scripts\activate

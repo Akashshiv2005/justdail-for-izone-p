@@ -46,12 +46,12 @@ export default function AdminPlatformReviewsTab({ onOpenSidebar }: { onOpenSideb
 
   const handleAction = async (id: number, action: 'approve' | 'reject' | 'delete') => {
     if (action === 'delete' && !confirm('Are you sure you want to delete this review?')) return;
-    
+
     try {
       const method = action === 'delete' ? 'DELETE' : 'POST';
       const endpoint = action === 'delete' ? `/api/admin/platform-reviews/${id}` : `/api/admin/platform-reviews/${id}/${action}`;
       const res = await authFetch(endpoint, { method });
-      
+
       if (res.ok) {
         showToast(`Review ${action}d successfully`);
         fetchReviews(); // Refresh the list
@@ -66,9 +66,9 @@ export default function AdminPlatformReviewsTab({ onOpenSidebar }: { onOpenSideb
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle size={12}/> Approved</span>;
+        return <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle size={12} /> Approved</span>;
       case 'rejected':
-        return <span className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-full text-xs font-bold flex items-center gap-1"><XCircle size={12}/> Rejected</span>;
+        return <span className="px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-full text-xs font-bold flex items-center gap-1"><XCircle size={12} /> Rejected</span>;
       default:
         return <span className="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-xs font-bold flex items-center gap-1"><span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span> Pending</span>;
     }

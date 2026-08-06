@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 
 load_dotenv()
-db_url = os.getenv('DATABASE_URL', 'postgresql://postgres:1234@localhost:5432/bizdial')
+db_url = os.getenv('DATABASE_URL', 'postgresql://postgres:postgre%40123@localhost:5432/bizdial1')
 try:
     engine = create_engine(db_url)
     with engine.connect() as conn:

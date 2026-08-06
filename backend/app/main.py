@@ -30,7 +30,7 @@ from app.routes.search_admin import router as search_admin_router
 
 from sqlalchemy import text
 with engine.connect() as conn:
-    conn.execute(text("CREATE SCHEMA IF NOT EXISTS bizdial"))
+    conn.execute(text("CREATE SCHEMA IF NOT EXISTS bizdial1"))
     conn.commit()
 
 # Create database tables
