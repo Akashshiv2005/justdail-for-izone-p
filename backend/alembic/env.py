@@ -80,7 +80,8 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection, 
             target_metadata=target_metadata,
-            include_schemas=True
+            include_schemas=True,
+            version_table_schema='bizdial'
         )
 
         with context.begin_transaction():
