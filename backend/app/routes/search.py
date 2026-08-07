@@ -303,6 +303,18 @@ def get_business_by_slug(slug: str, db: Session = Depends(get_db)):
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
         
+    from app.models.verification_models import BusinessDocument, VerificationStatusEnum
+    docs = db.query(BusinessDocument).filter(
+        BusinessDocument.business_id == biz.id,
+        BusinessDocument.status == VerificationStatusEnum.verified
+    ).all()
+    
+    for d in docs:
+        if d.doc_type == "Business Logo":
+            biz.logo_url = d.document_url
+        elif d.doc_type == "Cover Banner":
+            biz.cover_image_url = d.document_url
+        
     gallery = db.query(GalleryImage).filter(GalleryImage.business_id == biz.id).all()
     
     from app.models.business_service_mapping import BusinessServiceMapping
@@ -386,3 +398,27 @@ def submit_public_review(slug: str, payload: PublicReviewCreate, db: Session = D
     db.commit()
     return {"message": "Review submitted successfully and is pending approval."}
 
+class LeadCreate(BaseModel):
+    customer_name: str
+    customer_phone: str
+    service_interest: str
+
+@router.post("/api/business/{business_id}/enquire")
+def submit_enquiry(business_id: int, payload: LeadCreate, db: Session = Depends(get_db)):
+    biz = db.query(Business).filter(Business.id == business_id).first()
+    if not biz:
+        raise HTTPException(status_code=404, detail="Business not found")
+        
+    from app.models.business_extras import Lead, LeadStatus
+    
+    new_lead = Lead(
+        business_id=business_id,
+        customer_name=payload.customer_name,
+        customer_phone=payload.customer_phone,
+        service_interest=payload.service_interest,
+        status=LeadStatus.pending
+    )
+    
+    db.add(new_lead)
+    db.commit()
+    return {"message": "Enquiry submitted successfully."}

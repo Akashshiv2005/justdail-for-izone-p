@@ -1,14 +1,16 @@
 from collections import defaultdict
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+import os
+import shutil
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.business import Business
 from app.models.category import Category
 from app.models.user import User, RoleEnum
-from app.models.business_extras import Lead
+from app.models.business_extras import Lead, SupportTicket
 from app.models.review import Review
-from app.models.verification_models import BusinessOwnerProfile, BusinessDocument
+from app.models.verification_models import BusinessOwnerProfile, BusinessDocument, VerificationStatusEnum
 from pydantic import BaseModel
 from typing import Optional
 from passlib.context import CryptContext
@@ -188,8 +190,17 @@ def get_admin_stats(db: Session = Depends(get_db)):
             {"name": "Others", "value": int(business_count * 0.35), "color": "#94A3B8"}
         ]
         
+    recent_businesses = db.query(Business).order_by(Business.id.desc()).limit(5).all()
     recent_activities = []
-    # If we had real logs, we'd query them here. For now return empty when no data.
+    for b in recent_businesses:
+        recent_activities.append({
+            "id": b.id,
+            "title": f"New Business '{b.business_name}' registered.",
+            "time": "Recently",
+            "icon": "Building2",
+            "bg": "bg-blue-100",
+            "color": "text-blue-600"
+        })
         
     return {
         "total_businesses": business_count,
@@ -252,8 +263,10 @@ def get_admin_business_management(db: Session = Depends(get_db)):
         profile = db.query(BusinessOwnerProfile).filter(BusinessOwnerProfile.business_id == b.id).first()
         docs = db.query(BusinessDocument).filter(BusinessDocument.business_id == b.id).all()
         
-        reg_doc = next((d.document_url for d in docs if d.doc_type == "Registration Certificate"), b.verification_doc_url or "")
+        reg_doc = next((d.document_url for d in docs if d.doc_type in ("Registration Certificate", "Registration Certificate / License")), b.verification_doc_url or "")
         gst_doc = next((d.document_url for d in docs if d.doc_type == "GST Certificate"), b.gstin_doc_url or "")
+        logo_doc = next((d.document_url for d in docs if d.doc_type == "Business Logo"), b.logo_url or "")
+        cover_doc = next((d.document_url for d in docs if d.doc_type == "Cover Banner"), b.cover_image_url or "")
         
         cat_display = b.primary_category.name if b.primary_category else (b.category or "General")
         results.append({
@@ -283,8 +296,8 @@ def get_admin_business_management(db: Session = Depends(get_db)):
             "Approval Status": b.approval_status or "Pending",
             "Status": "Verified" if b.is_verified else "Pending",
             "Map URL": b.google_map_url or "",
-            "Logo URL": b.logo_url or "",
-            "Certificate URL": b.verification_doc_url or "",
+            "Logo URL": logo_doc,
+            "Certificate URL": reg_doc,
             "Working Days": b.working_days or "",
             "Open Time": b.opening_time or "",
             "Close Time": b.closing_time or "",
@@ -301,7 +314,7 @@ def get_admin_business_management(db: Session = Depends(get_db)):
             "Service Radius": str(profile.service_radius_km) if profile else "15",
             "Location Type": profile.location_type if profile else "Store",
             "Services Offered": ", ".join(profile.features) if profile and profile.features else "-",
-            "Cover Banner URL": b.cover_image_url or "",
+            "Cover Banner URL": cover_doc,
             "Registration Certificate URL": reg_doc,
             "GST Certificate URL": gst_doc,
             "Custom Slug": b.slug or "",
@@ -392,6 +405,9 @@ def update_business(business_id: int, payload: BusinessUpdateRequest, db: Sessio
         business.is_verified = payload.is_verified
         if payload.is_verified:
             business.approval_status = "Approved"
+            docs = db.query(BusinessDocument).filter(BusinessDocument.business_id == business_id).all()
+            for doc in docs:
+                doc.status = VerificationStatusEnum.verified
     if payload.approval_status is not None:
         business.approval_status = payload.approval_status
     if payload.seo_title is not None:
@@ -584,17 +600,35 @@ def get_admin_reviews_for_business(business_id: int, db: Session = Depends(get_d
 
 
 @router.get("/api/admin/support")
-def get_admin_support():
-    return [
-        {
-            "id": 1,
-            "Ticket ID": "SUP-1001",
-            "Subject": "Business onboarding help",
-            "User": "Kings Dental Academy",
-            "Date": "2026-07-24",
-            "Status": "Open",
-        }
-    ]
+def get_admin_support(db: Session = Depends(get_db)):
+    tickets = db.query(SupportTicket).all()
+    results = []
+    for t in tickets:
+        business = db.query(Business).filter(Business.id == t.business_id).first()
+        user_name = "Unknown"
+        if business:
+            user = db.query(User).filter(User.id == business.owner_id).first()
+            if user:
+                user_name = user.name
+                
+        results.append({
+            "id": t.id,
+            "Ticket ID": f"SUP-100{t.id}",
+            "Subject": t.subject,
+            "User": user_name,
+            "Date": str(t.created_at).split()[0] if t.created_at else "2026-08-07",
+            "Status": t.status,
+        })
+    return results
+
+@router.delete("/api/admin/support/{support_id}")
+def delete_admin_support(support_id: int, db: Session = Depends(get_db)):
+    ticket = db.query(SupportTicket).filter(SupportTicket.id == support_id).first()
+    if ticket:
+        db.delete(ticket)
+        db.commit()
+    return {"message": "Support ticket deleted successfully"}
+
 
 
 @router.get("/api/admin/notifications")
@@ -654,11 +688,18 @@ def get_admin_logs():
 
 @router.post("/api/admin/business/{business_id}/approve")
 def approve_business(business_id: int, db: Session = Depends(get_db)):
+    from app.models.verification_models import BusinessDocument, VerificationStatusEnum
     business = db.query(Business).filter(Business.id == business_id).first()
     if not business:
         return {"error": "Business not found"}
     business.approval_status = "Approved"
     business.is_verified = True
+    
+    # Also verify all associated documents
+    docs = db.query(BusinessDocument).filter(BusinessDocument.business_id == business_id).all()
+    for doc in docs:
+        doc.status = VerificationStatusEnum.verified
+
     db.commit()
     return {"message": "Business approved successfully", "business_id": business_id}
 
@@ -677,6 +718,7 @@ def reject_business(business_id: int, db: Session = Depends(get_db)):
 @router.put("/api/admin/business-approvals/{business_id}")
 @router.put("/api/admin/business-management/{business_id}")
 def update_business_admin(business_id: int, request: BusinessUpdateRequest, db: Session = Depends(get_db)):
+    from app.models.verification_models import BusinessDocument, VerificationStatusEnum
     business = db.query(Business).filter(Business.id == business_id).first()
     if not business:
         raise HTTPException(status_code=404, detail="Business not found")
@@ -696,6 +738,10 @@ def update_business_admin(business_id: int, request: BusinessUpdateRequest, db: 
         business.website = request.website
     if request.is_verified is not None:
         business.is_verified = request.is_verified
+        if request.is_verified:
+            docs = db.query(BusinessDocument).filter(BusinessDocument.business_id == business_id).all()
+            for doc in docs:
+                doc.status = VerificationStatusEnum.verified
     if request.approval_status is not None:
         business.approval_status = request.approval_status
     if request.seo_title is not None:
@@ -891,3 +937,33 @@ def delete_platform_review(testimonial_id: int, db: Session = Depends(get_db)):
     db.delete(t)
     db.commit()
     return {"message": "Testimonial deleted."}
+
+@router.post("/api/admin/upload")
+def upload_admin_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    UPLOAD_DIR = "uploads"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    import time
+    file_name = f"admin_{int(time.time())}_{file.filename}"
+    file_location = os.path.join(UPLOAD_DIR, file_name)
+    with open(file_location, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"url": f"/uploads/{file_name}"}
+
+
+@router.get("/api/admin/support-tickets")
+def get_admin_support_tickets(db: Session = Depends(get_db)):
+    from app.models.business_extras import SupportTicket
+    tickets = db.query(SupportTicket).order_by(SupportTicket.created_at.desc()).all()
+    results = []
+    for t in tickets:
+        b = db.query(Business).filter(Business.id == t.business_id).first()
+        results.append({
+            "id": t.id,
+            "business_name": b.business_name if b else "Unknown",
+            "subject": t.subject,
+            "message": t.message,
+            "status": t.status,
+            "created_at": t.created_at.isoformat() if t.created_at else None
+        })
+    return results
+

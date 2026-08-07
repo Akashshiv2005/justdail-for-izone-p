@@ -1,11 +1,21 @@
-from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+
+class SupportTicketCreate(BaseModel):
+    subject: str = "Help Center Request"
+    message: str
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.business import Business
 from app.models.user import User
-from app.models.business_extras import Product, Service, Lead, GalleryImage, Staff, Invoice, Promotion
-from pydantic import BaseModel
+from app.models.business_extras import Product, Service, Lead, GalleryImage, Staff, Invoice, Promotion, SupportTicket
 from typing import Optional
+
+import os
+import shutil
+from fastapi import UploadFile, File
+from app.models.verification_models import BusinessDocument, VerificationStatusEnum
 
 from app.auth_utils import get_current_owner
 
@@ -75,7 +85,6 @@ class ProfileContactUpdate(BaseModel):
 def update_owner_contact(business_id: int, payload: ProfileContactUpdate, db: Session = Depends(get_db)):
     business = db.query(Business).filter(Business.id == business_id).first()
     if not business:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Business not found")
     
     if payload.address is not None:
@@ -126,13 +135,19 @@ def update_owner_category(business_id: int, payload: CategoryUpdate, db: Session
 
 @router.get("/api/owner/{business_id}/stats")
 def get_owner_stats(business_id: int, db: Session = Depends(get_db)):
+    from app.models.review import Review
     business = db.query(Business).filter(Business.id == business_id).first()
     leads_count = db.query(Lead).filter(Lead.business_id == business_id).count()
+    pending_leads_count = db.query(Lead).filter(Lead.business_id == business_id, Lead.status == "Pending").count()
+    pending_reviews_count = db.query(Review).filter(Review.business_id == business_id, Review.moderation_status == "pending").count()
+    
     return {
         "profile_views": business.profile_views if business else 0,
         "leads_generated": leads_count,
         "customer_messages": business.whatsapp_clicks if business else 0,
-        "profile_rating": business.average_rating if business else 0.0
+        "profile_rating": business.average_rating if business else 0.0,
+        "new_inquiries_count": pending_leads_count,
+        "new_reviews_count": pending_reviews_count
     }
 
 # ======================== PRODUCTS ========================
@@ -140,9 +155,6 @@ def get_owner_stats(business_id: int, db: Session = Depends(get_db)):
 @router.get("/api/owner/{business_id}/products")
 def get_owner_products(business_id: int, db: Session = Depends(get_db)):
     return db.query(Product).filter(Product.business_id == business_id).all()
-
-from pydantic import BaseModel
-from typing import Optional
 
 class ProductCreate(BaseModel):
     name: str
@@ -162,7 +174,6 @@ def create_product(business_id: int, payload: ProductCreate, db: Session = Depen
 def update_product(business_id: int, item_id: int, payload: ProductCreate, db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == item_id, Product.business_id == business_id).first()
     if not product:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Product not found")
     product.name = payload.name
     if payload.category is not None: product.category = payload.category
@@ -175,7 +186,6 @@ def update_product(business_id: int, item_id: int, payload: ProductCreate, db: S
 def delete_product(business_id: int, item_id: int, db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == item_id, Product.business_id == business_id).first()
     if not product:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Product not found")
     db.delete(product)
     db.commit()
@@ -194,8 +204,6 @@ class OwnerServiceCreate(BaseModel):
 
 @router.get("/api/owner/{business_id}/master-services")
 def get_available_master_services(business_id: int, db: Session = Depends(get_db)):
-    from app.models.business import Business
-    from app.models.master_service import MasterService
     business = db.query(Business).filter(Business.id == business_id).first()
     if not business:
         return []
@@ -225,15 +233,11 @@ def get_owner_services(business_id: int, db: Session = Depends(get_db)):
 
 @router.post("/api/owner/{business_id}/services")
 def create_service(business_id: int, payload: OwnerServiceCreate, db: Session = Depends(get_db)):
-    from app.models.business import Business
-    from app.models.master_service import MasterService
-    
     ms_id = payload.master_service_id
     
     if not ms_id and payload.custom_name:
         business = db.query(Business).filter(Business.id == business_id).first()
         if not business or not business.primary_subcategory:
-            from fastapi import HTTPException
             raise HTTPException(status_code=400, detail="Business has no subcategory mapped")
             
         new_ms = MasterService(
@@ -268,7 +272,6 @@ def create_service(business_id: int, payload: OwnerServiceCreate, db: Session = 
 def update_service(business_id: int, item_id: int, payload: OwnerServiceCreate, db: Session = Depends(get_db)):
     mapping = db.query(BusinessServiceMapping).filter(BusinessServiceMapping.id == item_id, BusinessServiceMapping.business_id == business_id).first()
     if not mapping:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Service mapping not found")
     
     if payload.price is not None: mapping.price = payload.price
@@ -287,7 +290,6 @@ def update_service(business_id: int, item_id: int, payload: OwnerServiceCreate, 
 def delete_service(business_id: int, item_id: int, db: Session = Depends(get_db)):
     mapping = db.query(BusinessServiceMapping).filter(BusinessServiceMapping.id == item_id, BusinessServiceMapping.business_id == business_id).first()
     if not mapping:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Service mapping not found")
     db.delete(mapping)
     db.commit()
@@ -312,17 +314,27 @@ def create_lead(business_id: int, payload: LeadCreate, db: Session = Depends(get
     db.refresh(lead)
     return lead
 
+class LeadUpdate(BaseModel):
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
+    service_interest: Optional[str] = None
+    status: Optional[str] = None
+
 @router.put("/api/owner/{business_id}/leads/{item_id}")
-def update_lead_status(business_id: int, item_id: int, db: Session = Depends(get_db)):
+def update_lead(business_id: int, item_id: int, payload: LeadUpdate, db: Session = Depends(get_db)):
     lead = db.query(Lead).filter(Lead.id == item_id, Lead.business_id == business_id).first()
     if not lead:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Lead not found")
-    from app.models.business_extras import LeadStatus
-    if lead.status == LeadStatus.pending:
-        lead.status = LeadStatus.contacted
-    elif lead.status == LeadStatus.contacted:
-        lead.status = LeadStatus.converted
+        
+    if payload.customer_name is not None:
+        lead.customer_name = payload.customer_name
+    if payload.customer_phone is not None:
+        lead.customer_phone = payload.customer_phone
+    if payload.service_interest is not None:
+        lead.service_interest = payload.service_interest
+    if payload.status is not None:
+        lead.status = payload.status
+        
     db.commit()
     return lead
 
@@ -330,7 +342,6 @@ def update_lead_status(business_id: int, item_id: int, db: Session = Depends(get
 def delete_lead(business_id: int, item_id: int, db: Session = Depends(get_db)):
     lead = db.query(Lead).filter(Lead.id == item_id, Lead.business_id == business_id).first()
     if not lead:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Lead not found")
     db.delete(lead)
     db.commit()
@@ -359,7 +370,6 @@ def create_gallery_image(business_id: int, payload: GalleryCreate, db: Session =
 def update_gallery_image(business_id: int, item_id: int, payload: GalleryCreate, db: Session = Depends(get_db)):
     img = db.query(GalleryImage).filter(GalleryImage.id == item_id, GalleryImage.business_id == business_id).first()
     if not img:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Gallery image not found")
     img.image_url = payload.image_url
     img.title = payload.title
@@ -372,7 +382,6 @@ def update_gallery_image(business_id: int, item_id: int, payload: GalleryCreate,
 def delete_gallery_image(business_id: int, item_id: int, db: Session = Depends(get_db)):
     img = db.query(GalleryImage).filter(GalleryImage.id == item_id, GalleryImage.business_id == business_id).first()
     if not img:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Gallery image not found")
     db.delete(img)
     db.commit()
@@ -404,7 +413,6 @@ def create_staff(business_id: int, payload: StaffCreate, db: Session = Depends(g
 def update_staff(business_id: int, item_id: int, payload: StaffCreate, db: Session = Depends(get_db)):
     staff = db.query(Staff).filter(Staff.id == item_id, Staff.business_id == business_id).first()
     if not staff:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Staff not found")
     staff.name = payload.name
     if payload.email is not None: staff.email = payload.email
@@ -416,7 +424,6 @@ def update_staff(business_id: int, item_id: int, payload: StaffCreate, db: Sessi
 def delete_staff(business_id: int, item_id: int, db: Session = Depends(get_db)):
     staff = db.query(Staff).filter(Staff.id == item_id, Staff.business_id == business_id).first()
     if not staff:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Staff not found")
     db.delete(staff)
     db.commit()
@@ -441,15 +448,69 @@ def create_promotion(business_id: int, payload: PromotionCreate, db: Session = D
     db.refresh(promo)
     return promo
 
-@router.delete("/api/owner/{business_id}/promotions/{item_id}")
-def delete_promotion(business_id: int, item_id: int, db: Session = Depends(get_db)):
-    promo = db.query(Promotion).filter(Promotion.id == item_id, Promotion.business_id == business_id).first()
+@router.delete("/api/owner/{business_id}/promotions/{promo_id}")
+def delete_promotion(business_id: int, promo_id: int, db: Session = Depends(get_db)):
+    promo = db.query(Promotion).filter(Promotion.id == promo_id, Promotion.business_id == business_id).first()
     if not promo:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Promotion not found")
     db.delete(promo)
     db.commit()
-    return {"message": "Promotion deleted"}
+    return {"message": "Promotion deleted successfully"}
+
+# ======================== DOCUMENTS ========================
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.get("/api/owner/{business_id}/documents")
+def get_owner_documents(business_id: int, db: Session = Depends(get_db)):
+    docs = db.query(BusinessDocument).filter(BusinessDocument.business_id == business_id).all()
+    return [
+        {
+            "id": d.id,
+            "doc_type": d.doc_type,
+            "document_url": d.document_url,
+            "status": d.status.value,
+            "rejection_reason": d.rejection_reason,
+            "uploaded_at": d.uploaded_at
+        } for d in docs
+    ]
+
+@router.post("/api/owner/{business_id}/documents")
+def upload_owner_document(business_id: int, doc_type: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    loc = os.path.join(UPLOAD_DIR, f"{business_id}_{doc_type}_{file.filename}")
+    with open(loc, "wb") as buf:
+        shutil.copyfileobj(file.file, buf)
+    rel_path = f"/uploads/{business_id}_{doc_type}_{file.filename}"
+    
+    b_doc = BusinessDocument(
+        business_id=business_id,
+        doc_type=doc_type,
+        document_url=rel_path,
+        status=VerificationStatusEnum.pending
+    )
+    db.add(b_doc)
+    db.commit()
+    db.refresh(b_doc)
+    return {"message": "Document uploaded successfully", "id": b_doc.id}
+
+@router.put("/api/owner/{business_id}/documents/{doc_id}")
+def update_owner_document(business_id: int, doc_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    b_doc = db.query(BusinessDocument).filter(BusinessDocument.id == doc_id, BusinessDocument.business_id == business_id).first()
+    if not b_doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    loc = os.path.join(UPLOAD_DIR, f"{business_id}_{b_doc.doc_type}_{file.filename}")
+    with open(loc, "wb") as buf:
+        shutil.copyfileobj(file.file, buf)
+    rel_path = f"/uploads/{business_id}_{b_doc.doc_type}_{file.filename}"
+    
+    b_doc.document_url = rel_path
+    b_doc.status = VerificationStatusEnum.pending
+    b_doc.rejection_reason = None
+    
+    db.commit()
+    return {"message": "Document updated successfully", "id": b_doc.id}
 
 # ======================== INVOICES ========================
 
@@ -478,10 +539,9 @@ def get_owner_reviews(business_id: int, db: Session = Depends(get_db)):
     return results
 
 class OwnerReviewCreate(BaseModel):
-    col1: str = "Anonymous" # Customer
-    col2: str = "5" # Rating
-    col3: str = "" # Review Snippet
-    col4: str = "" # Date
+    customer_name: str = "Anonymous"
+    rating: int = 5
+    comment: str = ""
     status: str = "Active"
 
 @router.post("/api/owner/{business_id}/reviews")
@@ -489,9 +549,9 @@ def create_owner_review(business_id: int, payload: OwnerReviewCreate, db: Sessio
     from app.models.review import Review
     from app.models.user import User
     from datetime import datetime
-    rating = int(payload.col2.replace(" Stars", "").replace(" Star", "")) if isinstance(payload.col2, str) else 5
-    date_val = datetime.strptime(payload.col4, "%Y-%m-%d") if payload.col4 else datetime.now()
-    customer_name = payload.col1 if payload.col1 and payload.col1.strip() else "Anonymous"
+    rating = int(str(payload.rating).replace(" Stars", "").replace(" Star", "")) if payload.rating else 5
+    date_val = datetime.now()
+    customer_name = payload.customer_name if payload.customer_name and payload.customer_name.strip() else "Anonymous"
     user = db.query(User).filter(User.name == customer_name).first()
     if not user:
         user = User(
@@ -509,8 +569,8 @@ def create_owner_review(business_id: int, payload: OwnerReviewCreate, db: Sessio
         business_id=business_id,
         user_id=user.id,
         rating=rating,
-        comment=payload.col3,
-        moderation_status="approved",
+        comment=payload.comment,
+        moderation_status="approved" if payload.status == "Active" else "pending",
         created_at=date_val
     )
     db.add(review)
@@ -520,12 +580,18 @@ def create_owner_review(business_id: int, payload: OwnerReviewCreate, db: Sessio
 @router.put("/api/owner/{business_id}/reviews/{item_id}")
 def update_owner_review(business_id: int, item_id: int, payload: OwnerReviewCreate, db: Session = Depends(get_db)):
     from app.models.review import Review
+    from app.models.user import User
+    
     review = db.query(Review).filter(Review.id == item_id, Review.business_id == business_id).first()
     if not review:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Review not found")
-    review.rating = int(str(payload.col2).replace(" Stars", "").replace(" Star", "")) if payload.col2 else 5
-    review.comment = payload.col3
+        
+    user = db.query(User).filter(User.id == review.user_id).first()
+    if user and payload.customer_name:
+        user.name = payload.customer_name
+
+    review.rating = int(str(payload.rating).replace(" Stars", "").replace(" Star", "")) if payload.rating else 5
+    review.comment = payload.comment
     review.moderation_status = "approved" if payload.status == "Active" else "pending"
     db.commit()
     return {"message": "Review updated"}
@@ -535,7 +601,6 @@ def delete_owner_review(business_id: int, item_id: int, db: Session = Depends(ge
     from app.models.review import Review
     review = db.query(Review).filter(Review.id == item_id, Review.business_id == business_id).first()
     if not review:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Review not found")
     db.delete(review)
     db.commit()
@@ -545,17 +610,14 @@ def delete_owner_review(business_id: int, item_id: int, db: Session = Depends(ge
 
 @router.get("/api/owner/{business_id}/analytics")
 def get_owner_analytics(business_id: int):
-    # Dummy data to satisfy the dashboard fetch and avoid 404
     return []
 
 @router.get("/api/owner/{business_id}/settings")
 def get_owner_settings(business_id: int):
-    # Dummy data to satisfy the dashboard fetch and avoid 404
     return []
 
 @router.get("/api/owner/{business_id}/support")
 def get_owner_support(business_id: int):
-    # Dummy data to satisfy the dashboard fetch and avoid 404
     return []
 
 # ======================== PLATFORM REVIEWS (BizDial Testimonials) ========================
@@ -563,14 +625,13 @@ def get_owner_support(business_id: int):
 class PlatformReviewCreate(BaseModel):
     rating: float
     review_text: str
-    title: Optional[str] = None  # e.g. "Owner at Kings Dental Academy"
+    title: Optional[str] = None
 
 @router.post("/api/owner/{business_id}/platform-review")
 def submit_platform_review(business_id: int, payload: PlatformReviewCreate, db: Session = Depends(get_db)):
     from app.models.testimonial import Testimonial
     business = db.query(Business).filter(Business.id == business_id).first()
     if not business:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Business not found")
     owner = db.query(User).filter(User.id == business.owner_id).first()
 
@@ -582,7 +643,7 @@ def submit_platform_review(business_id: int, payload: PlatformReviewCreate, db: 
         role=role,
         text=payload.review_text,
         rating=payload.rating,
-        is_active=False,   # requires admin approval before showing on homepage
+        is_active=False,
         status="pending",
         business_id=business_id,
         owner_id=business.owner_id,
@@ -605,6 +666,47 @@ def get_owner_platform_reviews(business_id: int, db: Session = Depends(get_db)):
             "status": r.status or ("approved" if r.is_active else "pending"),
             "created_at": None,
         }
-        for r in reviews
     ]
 
+class OwnerPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.put("/api/owner/{business_id}/password")
+def update_owner_password(business_id: int, payload: OwnerPasswordUpdate, db: Session = Depends(get_db)):
+    from app.auth_utils import verify_password, get_password_hash
+    
+    business = db.query(Business).filter(Business.id == business_id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+        
+    user = db.query(User).filter(User.id == business.owner_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Owner not found")
+        
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+        
+    user.hashed_password = get_password_hash(payload.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}
+
+# ======================== SUPPORT TICKET ========================
+
+@router.post("/api/owner/{business_id}/support-ticket")
+def create_support_ticket(business_id: int, ticket: SupportTicketCreate, db: Session = Depends(get_db)):
+    business = db.query(Business).filter(Business.id == business_id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+        
+    new_ticket = SupportTicket(
+        business_id=business_id,
+        subject=ticket.subject,
+        message=ticket.message,
+        category="Help Center",
+        status="Open"
+    )
+    db.add(new_ticket)
+    db.commit()
+    db.refresh(new_ticket)
+    return {"message": "Support ticket created successfully", "id": new_ticket.id}

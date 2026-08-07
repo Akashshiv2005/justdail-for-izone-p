@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Package, Briefcase, Image as ImageIcon, 
-  Target, Star, BarChart, Settings, Headphones, LogOut, CheckCircle2, X, MessageSquarePlus
+  Target, Star, BarChart, Settings, Headphones, LogOut, CheckCircle2, X, MessageSquarePlus, FileText
 } from 'lucide-react';
 
 interface OwnerProfile {
@@ -19,6 +19,7 @@ const navItems = [
   { name: 'Leads', icon: Target },
   { name: 'Reviews', icon: Star },
   { name: 'Analytics', icon: BarChart },
+  { name: 'Documents', icon: FileText },
   { name: 'Settings', icon: Settings },
   { name: 'Support', icon: Headphones },
   { name: 'Rate BizDial', icon: MessageSquarePlus, highlight: true },

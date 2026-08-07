@@ -92,6 +92,11 @@ async def register_business(
     if logo_file: logo_url = save_file(logo_file)
     if cover_file: cover_url = save_file(cover_file)
 
+    from app.map_utils import extract_coordinates_from_url
+    coords = extract_coordinates_from_url(map_url)
+    lat = coords[0] if coords else None
+    lng = coords[1] if coords else None
+
     # Create Business Pending Approval
     new_business = Business(
         owner_id=new_user.id,
@@ -107,6 +112,8 @@ async def register_business(
         city=city or "Trichy",  # default to Trichy if not provided
         pincode=pincode,
         google_map_url=map_url,
+        latitude=lat,
+        longitude=lng,
         verification_doc_url=reg_url,
         pan_card_doc_url=pan_url,
         gstin_doc_url=gstin_url,
@@ -221,4 +228,19 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             }
         }
     raise HTTPException(status_code=400, detail="Invalid role specified")
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+    new_password: str
+
+@router.post("/api/auth/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == payload.email, User.role == RoleEnum.owner).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Business owner with this email not found")
+    
+    user.hashed_password = get_password_hash(payload.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}
 

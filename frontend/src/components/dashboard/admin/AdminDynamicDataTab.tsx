@@ -25,6 +25,29 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
 
+  const handleFileUpload = async (file: File, key: string) => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      setToastMessage('Uploading...');
+      const res = await authFetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEditFormData((prev: any) => ({ ...prev, [key]: data.url }));
+        setToastMessage('Upload successful!');
+      } else {
+        setToastMessage('Upload failed');
+      }
+    } catch (e) {
+      console.error(e);
+      setToastMessage('Upload failed');
+    }
+  };
+
   useEffect(() => {
     fetch('/api/admin/categories/')
       .then(res => res.json())
@@ -1187,11 +1210,15 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                                     value={val}
                                     onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
                                   />
-                                  {val && (
-                                    <a href={`http://localhost:8000${val}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-colors border border-slate-200 shadow-sm shrink-0" title="View Image">
-                                      <ExternalLink size={18} className="text-pink-600" />
-                                    </a>
-                                  )}
+                                  <label className="flex items-center justify-center px-4 bg-pink-50 hover:bg-pink-100 text-pink-600 rounded-2xl transition-colors border border-pink-200 shadow-sm shrink-0 cursor-pointer" title="Upload Image">
+                                    <span className="text-xs font-bold mr-1">Upload</span>
+                                    <input type="file" className="hidden" onChange={(e) => {
+                                      if (e.target.files?.[0]) handleFileUpload(e.target.files[0], key);
+                                    }} />
+                                  </label>
+                                  <a href={val ? `http://localhost:8000${val}` : '#'} target={val ? "_blank" : undefined} rel="noreferrer" className={`flex items-center justify-center px-4 rounded-2xl transition-colors border shadow-sm shrink-0 ${val ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-slate-50 text-slate-400 border-slate-100 pointer-events-none'}`} title={val ? "View Image" : "No Image"}>
+                                    <ExternalLink size={18} className={val ? "text-pink-600" : "text-slate-400"} />
+                                  </a>
                                 </div>
                               </div>
                             )})}
@@ -1219,6 +1246,12 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                                     value={val}
                                     onChange={e => setEditFormData((prev: any) => ({ ...prev, [key]: e.target.value }))}
                                   />
+                                  <label className="flex items-center justify-center px-4 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-2xl transition-colors border border-emerald-200 shadow-sm shrink-0 cursor-pointer" title="Upload Document">
+                                    <span className="text-xs font-bold mr-1">Upload</span>
+                                    <input type="file" className="hidden" onChange={(e) => {
+                                      if (e.target.files?.[0]) handleFileUpload(e.target.files[0], key);
+                                    }} />
+                                  </label>
                                   {val && (
                                     <a href={`http://localhost:8000${val}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-colors border border-slate-200 shadow-sm shrink-0" title="View Document">
                                       <ExternalLink size={18} className="text-emerald-600" />

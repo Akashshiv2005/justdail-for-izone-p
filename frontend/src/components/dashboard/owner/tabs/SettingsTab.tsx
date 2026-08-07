@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, Lock, Globe, Shield, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { authFetch } from '../../../../lib/services/authFetch';
 
 export default function SettingsTab({ profile }: { profile: any }) {
   const [activeSettingTab, setActiveSettingTab] = useState('notifications');
@@ -14,9 +16,44 @@ export default function SettingsTab({ profile }: { profile: any }) {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+
+  const handlePasswordUpdate = async () => {
+    if (!currentPassword || !newPassword) {
+      alert("Please enter both current and new passwords.");
+      return;
+    }
+    
+    try {
+      const res = await authFetch(`/api/owner/${profile.business_id}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || "Password updated successfully!");
+        setCurrentPassword('');
+        setNewPassword('');
+      } else {
+        alert(data.detail || "Failed to update password");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("An error occurred while updating the password.");
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="p-4 sm:p-8 space-y-6"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">Account Settings</h2>
           <p className="text-slate-500 mt-1">Manage your preferences, security, and notifications.</p>
@@ -110,9 +147,24 @@ export default function SettingsTab({ profile }: { profile: any }) {
                 <div className="pb-6 border-b border-slate-100">
                   <h4 className="font-semibold text-slate-800 mb-4">Change Password</h4>
                   <div className="space-y-4 max-w-md">
-                    <input type="password" placeholder="Current Password" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm" />
-                    <input type="password" placeholder="New Password" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm" />
-                    <button className="px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors text-sm">
+                    <input 
+                      type="password" 
+                      placeholder="Current Password" 
+                      value={currentPassword}
+                      onChange={e => setCurrentPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm" 
+                    />
+                    <input 
+                      type="password" 
+                      placeholder="New Password" 
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 outline-none text-sm" 
+                    />
+                    <button 
+                      onClick={handlePasswordUpdate}
+                      className="px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors text-sm"
+                    >
                       Update Password
                     </button>
                   </div>
@@ -154,6 +206,6 @@ export default function SettingsTab({ profile }: { profile: any }) {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

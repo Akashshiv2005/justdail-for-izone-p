@@ -208,7 +208,7 @@ export default function AdminDashboardTab({ onOpenSidebar }: { onOpenSidebar: ()
             {(stats?.recent_activities || []).map((act: any) => (
               <div key={act.id} className="flex items-start gap-4">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${act.bg} ${act.color}`}>
-                  <act.icon className="w-4 h-4" />
+                  {act.icon === 'Building2' ? <Building2 className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-slate-800 leading-snug">{act.title}</p>

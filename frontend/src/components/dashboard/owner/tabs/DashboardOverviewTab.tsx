@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Calendar, Globe, Target, MessageCircle, Star, ArrowUpRight, ArrowRight, Megaphone 
+  Calendar, Globe, Target, MessageCircle, Star, ArrowUpRight, ArrowRight, Megaphone, CheckCircle2 
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
@@ -196,50 +196,51 @@ export default function DashboardOverviewTab({ profile }: { profile: OwnerProfil
               <h3 className="text-lg font-bold text-slate-900">Action Required</h3>
               <p className="text-sm text-slate-500 font-medium">Tasks needing attention</p>
             </div>
-            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">
-              3
-            </div>
+            {(stats?.new_inquiries_count > 0 || stats?.new_reviews_count > 0) && (
+              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">
+                {(stats?.new_inquiries_count || 0) + (stats?.new_reviews_count || 0)}
+              </div>
+            )}
           </div>
           <div className="p-2 flex-1 overflow-y-auto">
             
-            <div className="p-4 m-2 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-md transition-all cursor-pointer group border border-blue-100/50">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
-                  <MessageCircle className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900">3 New Customer Inquiries</p>
-                  <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">Respond quickly to convert them to sales.</p>
-                  <button className="mt-3 text-xs font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">Reply Now <ArrowRight className="w-3 h-3" /></button>
+            {(stats?.new_inquiries_count > 0) && (
+              <div className="p-4 m-2 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-md transition-all cursor-pointer group border border-blue-100/50">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
+                    <MessageCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-900">{stats.new_inquiries_count} New Customer Inquiries</p>
+                    <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">Respond quickly to convert them to sales.</p>
+                    <button className="mt-3 text-xs font-bold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">Reply Now <ArrowRight className="w-3 h-3" /></button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            <div className="p-4 m-2 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all cursor-pointer group border border-amber-100/50">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
-                  <Star className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900">2 New Reviews</p>
-                  <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">Acknowledge reviews to build trust.</p>
-                  <button className="mt-3 text-xs font-bold text-amber-600 flex items-center gap-1 group-hover:gap-2 transition-all">View Reviews <ArrowRight className="w-3 h-3" /></button>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 m-2 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 hover:shadow-md transition-all cursor-pointer group border border-purple-100/50">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30 group-hover:scale-110 transition-transform">
-                  <Megaphone className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900">Boost Your Visibility</p>
-                  <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">Run an ad campaign for the upcoming festival.</p>
-                  <button className="mt-3 text-xs font-bold text-purple-600 flex items-center gap-1 group-hover:gap-2 transition-all">Start Campaign <ArrowRight className="w-3 h-3" /></button>
+            {(stats?.new_reviews_count > 0) && (
+              <div className="p-4 m-2 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-md transition-all cursor-pointer group border border-amber-100/50">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
+                    <Star className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-900">{stats.new_reviews_count} New Reviews</p>
+                    <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed">Acknowledge reviews to build trust.</p>
+                    <button className="mt-3 text-xs font-bold text-amber-600 flex items-center gap-1 group-hover:gap-2 transition-all">View Reviews <ArrowRight className="w-3 h-3" /></button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+            
+            {!(stats?.new_inquiries_count > 0) && !(stats?.new_reviews_count > 0) && (
+              <div className="p-8 text-center text-slate-500">
+                <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                <p className="font-medium text-slate-700">All caught up!</p>
+                <p className="text-sm mt-1">No action required at the moment.</p>
+              </div>
+            )}
 
           </div>
         </motion.div>

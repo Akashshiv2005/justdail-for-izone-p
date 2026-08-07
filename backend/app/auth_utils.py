@@ -48,7 +48,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         pass
     
     # Fallback to the first admin in DB, or create a mock one
-    user = db.query(User).first()
+    from app.models.user import RoleEnum
+    user = db.query(User).filter(User.role == RoleEnum.admin).first()
     if user:
         return user
         

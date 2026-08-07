@@ -35,6 +35,7 @@ class LeadStatus(str, enum.Enum):
     pending = "Pending"
     contacted = "Contacted"
     converted = "Converted"
+    rejected = "Rejected"
 
 class Lead(Base):
     __tablename__ = "leads"

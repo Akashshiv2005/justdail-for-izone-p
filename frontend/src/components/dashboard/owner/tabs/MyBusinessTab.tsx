@@ -9,23 +9,54 @@ export default function MyBusinessTab({ profile, businessId, refreshData }: any)
     address: '',
     google_map_url: '',
     phone: '',
-    whatsapp: ''
+    whatsapp: '',
+    working_hours: {
+      Monday: { start: '09:00', end: '21:00', isOpen: true },
+      Tuesday: { start: '09:00', end: '21:00', isOpen: true },
+      Wednesday: { start: '09:00', end: '21:00', isOpen: true },
+      Thursday: { start: '09:00', end: '21:00', isOpen: true },
+      Friday: { start: '09:00', end: '21:00', isOpen: true },
+      Saturday: { start: '09:00', end: '21:00', isOpen: true },
+      Sunday: { start: '09:00', end: '21:00', isOpen: false },
+    }
   });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         address: `${profile.address || ''}${profile.pincode ? `, ${profile.pincode}` : ''}`,
         google_map_url: profile.google_map_url || '',
         phone: profile.phone || '',
-        whatsapp: profile.whatsapp || ''
-      });
+        whatsapp: profile.whatsapp || '',
+        working_hours: profile.working_hours ? { ...prev.working_hours, ...profile.working_hours } : prev.working_hours
+      }));
     }
   }, [profile]);
 
   const handleChange = (e: any) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleTimeChange = (day: string, field: 'start'|'end', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      working_hours: {
+        ...prev.working_hours,
+        [day]: { ...(prev.working_hours as any)[day], [field]: value }
+      }
+    }));
+  };
+
+  const handleToggleOpen = (day: string) => {
+    setFormData(prev => ({
+      ...prev,
+      working_hours: {
+        ...prev.working_hours,
+        [day]: { ...(prev.working_hours as any)[day], isOpen: !(prev.working_hours as any)[day].isOpen }
+      }
+    }));
   };
 
   const handleSave = async () => {
@@ -112,20 +143,22 @@ export default function MyBusinessTab({ profile, businessId, refreshData }: any)
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2"><Clock size={18} className="text-blue-600" /> Business Timings</h3>
             <div className="space-y-3">
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, idx) => (
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                const dayData = (formData.working_hours as any)[day];
+                return (
                 <div key={day} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm border-b border-slate-50 pb-2 last:border-0 last:pb-0">
                   <span className="font-medium text-slate-700 w-24">{day}</span>
                   <div className="flex items-center gap-2 flex-1">
-                    <input type="time" defaultValue={idx === 6 ? "" : "09:00"} disabled={idx === 6} className={`border border-slate-200 rounded px-3 py-1 outline-none focus:border-blue-500 ${idx === 6 ? 'bg-slate-50 text-slate-400' : 'text-slate-600'}`} />
+                    <input type="time" value={dayData.isOpen ? dayData.start : ""} onChange={(e) => handleTimeChange(day, 'start', e.target.value)} disabled={!dayData.isOpen} className={`border border-slate-200 rounded px-3 py-1 outline-none focus:border-blue-500 ${!dayData.isOpen ? 'bg-slate-50 text-slate-400' : 'text-slate-600'}`} />
                     <span className="text-slate-400 font-medium">to</span>
-                    <input type="time" defaultValue={idx === 6 ? "" : "21:00"} disabled={idx === 6} className={`border border-slate-200 rounded px-3 py-1 outline-none focus:border-blue-500 ${idx === 6 ? 'bg-slate-50 text-slate-400' : 'text-slate-600'}`} />
+                    <input type="time" value={dayData.isOpen ? dayData.end : ""} onChange={(e) => handleTimeChange(day, 'end', e.target.value)} disabled={!dayData.isOpen} className={`border border-slate-200 rounded px-3 py-1 outline-none focus:border-blue-500 ${!dayData.isOpen ? 'bg-slate-50 text-slate-400' : 'text-slate-600'}`} />
                   </div>
                   <div className="flex items-center gap-2 sm:justify-end">
-                    <input type="checkbox" defaultChecked={idx !== 6} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" />
-                    <span className={`text-xs font-bold ${idx === 6 ? 'text-red-500' : 'text-green-600'}`}>{idx === 6 ? 'Closed' : 'Open'}</span>
+                    <input type="checkbox" checked={dayData.isOpen} onChange={() => handleToggleOpen(day)} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" />
+                    <span className={`text-xs font-bold ${!dayData.isOpen ? 'text-red-500' : 'text-green-600'}`}>{!dayData.isOpen ? 'Closed' : 'Open'}</span>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         </div>

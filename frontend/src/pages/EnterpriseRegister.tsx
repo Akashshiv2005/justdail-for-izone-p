@@ -222,7 +222,42 @@ export default function EnterpriseRegister() {
   ];
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+    let processedValue = value;
+    
+    // Validate names, city, area (only string: letters and spaces)
+    if (['fullName', 'businessName', 'contactName', 'city', 'area'].includes(field)) {
+      processedValue = typeof value === 'string' ? value.replace(/[^a-zA-Z\s]/g, '') : value;
+    }
+    
+    // Validate phone numbers (only 10 digits integer)
+    if (['phone', 'whatsapp', 'contactPhone', 'contactWhatsapp'].includes(field)) {
+      processedValue = typeof value === 'string' ? value.replace(/\D/g, '').slice(0, 10) : value;
+    }
+
+    // Validate landline (only 11 digits integer)
+    if (field === 'landline') {
+      processedValue = typeof value === 'string' ? value.replace(/\D/g, '').slice(0, 11) : value;
+    }
+
+    // Validate postal code (only 6 digits integer)
+    if (field === 'postalCode') {
+      processedValue = typeof value === 'string' ? value.replace(/\D/g, '').slice(0, 6) : value;
+    }
+
+    // Validate PAN & GST (alphanumeric uppercase, max 10/15 chars)
+    if (field === 'panNumber') {
+      processedValue = typeof value === 'string' ? value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 10) : value;
+    }
+    if (field === 'gstNumber') {
+      processedValue = typeof value === 'string' ? value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 15) : value;
+    }
+
+    // Validate Working Hours (letters, digits, spaces, colon, hyphen only)
+    if (['mondayHours', 'sundayHours'].includes(field)) {
+      processedValue = typeof value === 'string' ? value.replace(/[^a-zA-Z0-9\s:-]/g, '') : value;
+    }
+
+    setFormData((prev: any) => ({ ...prev, [field]: processedValue }));
   };
 
   const toggleArrayItem = (field: 'paymentMethods' | 'featuresList', item: string) => {
@@ -637,11 +672,11 @@ export default function EnterpriseRegister() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Facebook Profile</label>
-                    <input type="text" value={formData.facebook} onChange={(e) => handleInputChange('facebook', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" placeholder="https://facebook.com/mybusiness" />
+                    <input type="url" value={formData.facebook} onChange={(e) => handleInputChange('facebook', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" placeholder="https://facebook.com/mybusiness" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Instagram Handle</label>
-                    <input type="text" value={formData.instagram} onChange={(e) => handleInputChange('instagram', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" placeholder="https://instagram.com/mybusiness" />
+                    <input type="url" value={formData.instagram} onChange={(e) => handleInputChange('instagram', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" placeholder="https://instagram.com/mybusiness" />
                   </div>
                 </div>
               </div>
@@ -658,11 +693,29 @@ export default function EnterpriseRegister() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Monday - Saturday Hours</label>
-                    <input type="text" value={formData.mondayHours} onChange={(e) => handleInputChange('mondayHours', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" />
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.mondayHours} 
+                      onChange={(e) => handleInputChange('mondayHours', e.target.value)} 
+                      pattern="^((1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm|AM|PM)\s?-\s?(1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm|AM|PM)|Closed|24 Hours)$"
+                      title="Format must be '9:00 am - 10:00 pm' or 'Closed'"
+                      placeholder="e.g. 9:00 am - 10:00 pm"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" 
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Sunday Hours</label>
-                    <input type="text" value={formData.sundayHours} onChange={(e) => handleInputChange('sundayHours', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" />
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.sundayHours} 
+                      onChange={(e) => handleInputChange('sundayHours', e.target.value)} 
+                      pattern="^((1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm|AM|PM)\s?-\s?(1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm|AM|PM)|Closed|24 Hours)$"
+                      title="Format must be '9:00 am - 10:00 pm' or 'Closed'"
+                      placeholder="e.g. Closed"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" 
+                    />
                   </div>
                 </div>
 
@@ -685,7 +738,7 @@ export default function EnterpriseRegister() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Services Offered (Comma Separated)</label>
-                  <textarea rows={2} value={formData.servicesOffered} onChange={(e) => handleInputChange('servicesOffered', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" />
+                  <textarea rows={2} required value={formData.servicesOffered} onChange={(e) => handleInputChange('servicesOffered', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none" />
                 </div>
 
 
@@ -704,7 +757,7 @@ export default function EnterpriseRegister() {
                   <div className="p-5 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Image className="mx-auto text-blue-600" size={32} />
                     <p className="text-sm font-bold text-slate-800">Business Logo</p>
-                    <input type="file" onChange={(e) => handleInputChange('logoFile', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
+                    <input type="file" required onChange={(e) => handleInputChange('logoFile', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
                   </div>
                   <div className="p-5 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Image className="mx-auto text-purple-600" size={32} />
@@ -727,13 +780,13 @@ export default function EnterpriseRegister() {
                   <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Upload className="mx-auto text-blue-600" size={28} />
                     <p className="text-sm font-bold text-slate-800">Registration Certificate / License (Mandatory)</p>
-                    <input type="file" onChange={(e) => handleInputChange('docReg', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
+                    <input type="file" required onChange={(e) => handleInputChange('docReg', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
                   </div>
 
                   <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Upload className="mx-auto text-green-600" size={28} />
                     <p className="text-sm font-bold text-slate-800">GST Certificate (Mandatory)</p>
-                    <input type="file" onChange={(e) => handleInputChange('docGst', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
+                    <input type="file" required onChange={(e) => handleInputChange('docGst', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
                   </div>
                 </div>
               </div>
@@ -854,7 +907,7 @@ export default function EnterpriseRegister() {
                 </button>
               )}
               {currentStep < 10 ? (
-                <button type="button" onClick={handleNext} className="ml-auto px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-1">
+                <button type="submit" className="ml-auto px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-1">
                   Next Step <ChevronRight size={16} />
                 </button>
               ) : (

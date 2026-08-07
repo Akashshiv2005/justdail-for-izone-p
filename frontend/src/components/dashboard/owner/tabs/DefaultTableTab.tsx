@@ -20,11 +20,51 @@ export default function DefaultTableTab({ tabName, data, columns, editingRow, se
     const url = isAdding ? `/api/owner/${businessId}/${endpoint}` : `/api/owner/${businessId}/${endpoint}/${editingRow.id}`;
     const method = isAdding ? 'POST' : 'PUT';
 
+    let payload: any = { ...formData };
+    
+    // Map UI generic cols back to API schema
+    if (tabName === 'Leads') {
+      payload = {
+        customer_name: formData.col1 || '',
+        customer_phone: formData.col2 || '',
+        service_interest: formData.col3 || '',
+        status: formData.status || 'Active'
+      };
+    } else if (tabName === 'Products') {
+      payload = {
+        name: formData.col1 || '',
+        category: formData.col2 || '',
+        price: parseFloat(formData.col3?.toString().replace(/[^0-9.]/g, '')) || 0,
+        stock_quantity: parseInt(formData.col4?.toString().replace(/[^0-9]/g, '')) || 0
+      };
+    } else if (tabName === 'Reviews') {
+      payload = {
+        customer_name: formData.col1 || '',
+        rating: parseInt(formData.col2) || 5,
+        comment: formData.col3 || '',
+        status: formData.status || 'Active'
+      };
+    } else if (tabName === 'Manage Staff') {
+      payload = {
+        name: formData.col1 || '',
+        role: formData.col2 || '',
+        email: formData.col3 || '',
+        phone: formData.col4 || ''
+      };
+    } else if (tabName === 'Services') {
+      payload = {
+        master_service_id: formData.master_service_id || null,
+        custom_name: formData.col1 || '',
+        description: formData.col2 || '',
+        price: parseFloat(formData.col3?.toString().replace(/[^0-9.]/g, '')) || 0,
+      };
+    }
+
     try {
       const res = await authFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         setEditingRow(null);
@@ -100,15 +140,23 @@ export default function DefaultTableTab({ tabName, data, columns, editingRow, se
                     <td key={idx} className={`px-6 py-4 ${idx === 0 ? 'font-medium text-slate-900' : 'text-slate-600'}`}>
                       {col === 'Status' ? (
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          row.status === 'Active' || row.status === 'Verified' || row.status === 'Completed' 
+                          row.status === 'Active' || row.status === 'Verified' || row.status === 'Completed' || row.status === 'Converted'
                             ? 'bg-green-100 text-green-700' 
                             : row.status === 'Pending' 
                             ? 'bg-amber-100 text-amber-700' 
+                            : row.status === 'Contacted'
+                            ? 'bg-blue-100 text-blue-700'
+                            : row.status === 'Rejected'
+                            ? 'bg-red-100 text-red-700'
                             : 'bg-slate-100 text-slate-700'
                         }`}>
                           {row.status}
                         </span>
-                      ) : idx === 0 ? row.col1 : idx === 1 ? row.col2 : idx === 2 ? row.col3 : row.col4}
+                      ) : idx === 0 ? row.col1 : idx === 1 ? row.col2 : idx === 2 ? (
+                        typeof row.col3 === 'string' && row.col3.length > 80 ? row.col3.substring(0, 80) + '...' : row.col3
+                      ) : (
+                        typeof row.col4 === 'string' && row.col4.length > 80 ? row.col4.substring(0, 80) + '...' : row.col4
+                      )}
                     </td>
                   ))}
                   <td className="px-6 py-4 text-right flex justify-end gap-3">
@@ -161,7 +209,18 @@ export default function DefaultTableTab({ tabName, data, columns, editingRow, se
                     return (
                       <div key={idx} className={isFullWidth ? "sm:col-span-2" : ""}>
                         <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{col}</label>
-                        {col === 'Status' ? (
+                        {col === 'Status' && tabName === 'Leads' ? (
+                          <select 
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all cursor-pointer appearance-none"
+                            value={formData[fieldKey] || 'Pending'}
+                            onChange={(e) => setFormData({...formData, [fieldKey]: e.target.value})}
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Converted">Converted</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                        ) : col === 'Status' ? (
                           <select 
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm text-slate-700 font-medium bg-white shadow-sm hover:border-slate-300 transition-all cursor-pointer appearance-none"
                             value={formData[fieldKey] || 'Active'}

@@ -87,6 +87,11 @@ async def register_enterprise_business(
     db.commit()
     db.refresh(user)
 
+    from app.map_utils import extract_coordinates_from_url
+    coords = extract_coordinates_from_url(map_url)
+    lat = coords[0] if coords else None
+    lng = coords[1] if coords else None
+
     # 3. Create Business
     business = Business(
         owner_id=user.id,
@@ -102,6 +107,8 @@ async def register_enterprise_business(
         city=city or "Trichy",
         pincode=pincode,
         google_map_url=map_url,
+        latitude=lat,
+        longitude=lng,
         is_verified=False,
         approval_status="Pending",
         working_days=working_days,
@@ -242,6 +249,16 @@ def approve_document(doc_id: int, db: Session = Depends(get_db)):
     b = db.query(Business).filter(Business.id == doc.business_id).first()
     p = db.query(BusinessOwnerProfile).filter(BusinessOwnerProfile.business_id == doc.business_id).first()
     docs = db.query(BusinessDocument).filter(BusinessDocument.business_id == doc.business_id).all()
+
+    if b:
+        if doc.doc_type == "Business Logo":
+            b.logo_url = doc.document_url
+        elif doc.doc_type == "Cover Banner":
+            b.cover_image_url = doc.document_url
+        elif doc.doc_type in ["Registration Certificate", "Registration Certificate / License"]:
+            b.verification_doc_url = doc.document_url
+        elif doc.doc_type == "GST Certificate":
+            b.gstin_doc_url = doc.document_url
 
     if b and p:
         q_res = QualityScoreEvaluator.calculate_business_quality(b, p, docs)
