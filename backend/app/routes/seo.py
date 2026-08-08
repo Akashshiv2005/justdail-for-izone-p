@@ -118,6 +118,19 @@ def get_dynamic_landing_page(
 
     businesses_raw = query.order_by(Business.average_rating.desc()).limit(30).all()
 
+    from app.models.verification_models import BusinessDocument, VerificationStatusEnum
+    biz_ids = [b.id for b in businesses_raw]
+    if biz_ids:
+        docs = db.query(BusinessDocument).filter(
+            BusinessDocument.business_id.in_(biz_ids),
+            BusinessDocument.doc_type == "Business Logo",
+            BusinessDocument.status == VerificationStatusEnum.verified
+        ).all()
+        doc_map = {d.business_id: d.document_url for d in docs}
+        for b in businesses_raw:
+            if b.id in doc_map and not b.logo_url:
+                b.logo_url = doc_map[b.id]
+
     # Score and rank
     scored_businesses = []
     for b in businesses_raw:

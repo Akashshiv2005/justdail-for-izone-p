@@ -265,6 +265,7 @@ def get_admin_business_management(db: Session = Depends(get_db)):
         
         reg_doc = next((d.document_url for d in docs if d.doc_type in ("Registration Certificate", "Registration Certificate / License")), b.verification_doc_url or "")
         gst_doc = next((d.document_url for d in docs if d.doc_type == "GST Certificate"), b.gstin_doc_url or "")
+        pan_doc = next((d.document_url for d in docs if d.doc_type == "PAN Card"), b.pan_card_doc_url or "")
         logo_doc = next((d.document_url for d in docs if d.doc_type == "Business Logo"), b.logo_url or "")
         cover_doc = next((d.document_url for d in docs if d.doc_type == "Cover Banner"), b.cover_image_url or "")
         
@@ -317,6 +318,7 @@ def get_admin_business_management(db: Session = Depends(get_db)):
             "Cover Banner URL": cover_doc,
             "Registration Certificate URL": reg_doc,
             "GST Certificate URL": gst_doc,
+            "PAN Card URL": pan_doc,
             "Custom Slug": b.slug or "",
             "Meta Title": b.seo_title or "",
             "Meta Description": b.seo_description or "",

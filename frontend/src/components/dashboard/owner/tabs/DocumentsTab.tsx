@@ -14,7 +14,7 @@ export default function DocumentsTab({ businessId }: { businessId: string }) {
   
   const [editingDoc, setEditingDoc] = useState<any>(null);
 
-  const docTypes = ['Business Logo', 'Cover Banner', 'Registration Certificate / License', 'GST Certificate'];
+  const docTypes = ['Business Logo', 'Cover Banner', 'Registration Certificate / License', 'GST Certificate', 'PAN Card'];
 
   const fetchDocuments = async () => {
     setLoading(true);
@@ -84,6 +84,24 @@ export default function DocumentsTab({ businessId }: { businessId: string }) {
     setEditingDoc(doc);
     setUploadType(doc.doc_type);
     setShowUploadModal(true);
+  };
+
+  const handleDeleteDocument = async (docId: number) => {
+    if (!confirm('Are you sure you want to delete this document?')) return;
+    
+    try {
+      const res = await authFetch(`/api/owner/${businessId}/documents/${docId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        await fetchDocuments();
+      } else {
+        alert('Failed to delete document');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting document');
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -173,6 +191,12 @@ export default function DocumentsTab({ businessId }: { businessId: string }) {
                         className="text-blue-600 font-medium hover:underline text-xs"
                       >
                         Re-upload
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        className="text-red-600 font-medium hover:underline text-xs"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>

@@ -168,12 +168,12 @@ export default function BusinessOwnerDashboard() {
                     </div>
                     {stats?.new_inquiries_count > 0 && (
                       <div className="px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50" onClick={() => setActiveTab('Leads')}>
-                        You have <span className="font-bold text-slate-900">{stats.new_inquiries_count}</span> new customer inquiries.
+                        You have <span className="font-bold text-slate-900">{stats.new_inquiries_count}</span> new customer {stats.new_inquiries_count === 1 ? 'inquiry' : 'inquiries'}.
                       </div>
                     )}
                     {stats?.new_reviews_count > 0 && (
                       <div className="px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50" onClick={() => setActiveTab('Reviews')}>
-                        You have <span className="font-bold text-slate-900">{stats.new_reviews_count}</span> new reviews pending.
+                        You have <span className="font-bold text-slate-900">{stats.new_reviews_count}</span> new {stats.new_reviews_count === 1 ? 'review' : 'reviews'} pending.
                       </div>
                     )}
                     {(!stats?.new_inquiries_count && !stats?.new_reviews_count) && (

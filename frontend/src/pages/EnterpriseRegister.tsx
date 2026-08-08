@@ -776,11 +776,17 @@ export default function EnterpriseRegister() {
                   <p className="text-xs text-slate-500 mt-1">Upload official business registration certificates to qualify for Verified Badges.</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
                     <Upload className="mx-auto text-blue-600" size={28} />
                     <p className="text-sm font-bold text-slate-800">Registration Certificate / License (Mandatory)</p>
                     <input type="file" required onChange={(e) => handleInputChange('docReg', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
+                  </div>
+
+                  <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">
+                    <Upload className="mx-auto text-orange-500" size={28} />
+                    <p className="text-sm font-bold text-slate-800">PAN Card (Mandatory)</p>
+                    <input type="file" required onChange={(e) => handleInputChange('docPan', e.target.files?.[0] || null)} className="text-xs text-slate-500 mx-auto" />
                   </div>
 
                   <div className="p-4 border border-dashed border-slate-300 rounded-2xl text-center space-y-2">

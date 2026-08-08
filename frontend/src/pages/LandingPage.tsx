@@ -15,6 +15,43 @@ export default function LandingPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // Enquiry state
+  const [showEnquiryModal, setShowEnquiryModal] = useState(false);
+  const [selectedBusinessForEnquiry, setSelectedBusinessForEnquiry] = useState<any>(null);
+  const [enquiryForm, setEnquiryForm] = useState({ name: '', phone: '', service: '' });
+  const [enquiryLoading, setEnquiryLoading] = useState(false);
+  const [enquirySuccess, setEnquirySuccess] = useState(false);
+
+  const handleEnquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enquiryForm.name || !enquiryForm.phone || !enquiryForm.service || !selectedBusinessForEnquiry) return;
+    setEnquiryLoading(true);
+    
+    try {
+      const response = await fetch(`/api/business/${selectedBusinessForEnquiry.id}/enquire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: enquiryForm.name,
+          customer_phone: enquiryForm.phone,
+          service_interest: enquiryForm.service
+        })
+      });
+      if (response.ok) {
+        setEnquirySuccess(true);
+        setTimeout(() => {
+          setShowEnquiryModal(false);
+          setEnquirySuccess(false);
+          setEnquiryForm({ name: '', phone: '', service: '' });
+          setSelectedBusinessForEnquiry(null);
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Failed to submit enquiry", err);
+    }
+    setEnquiryLoading(false);
+  };
+
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams({
@@ -105,17 +142,7 @@ export default function LandingPage() {
             Popular {qCategory} in {qCity}
           </h2>
 
-          {/* Filter Bar */}
-          <div className="flex gap-3 mb-6 overflow-x-auto pb-2 no-scrollbar">
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">Sort by <span className="text-xs">?</span></button>
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1"><Zap size={14} className="fill-current text-slate-700"/> Quick Response</button>
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1"><Star size={14} className="fill-current"/> Top Rated</button>
-            <button className="px-4 py-1.5 border border-blue-200 bg-blue-50 text-blue-700 rounded-full text-sm font-bold whitespace-nowrap hover:bg-blue-100 flex items-center gap-1">? Jd Verified</button>
-            <button className="px-4 py-1.5 border border-blue-200 text-blue-600 rounded-full text-sm font-bold whitespace-nowrap hover:bg-blue-50 flex items-center gap-1">% Deals</button>
-            <button className="px-4 py-1.5 border border-yellow-200 text-yellow-600 rounded-full text-sm font-bold whitespace-nowrap hover:bg-yellow-50 flex items-center gap-1">🏆 Jd Trust</button>
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">Ratings <span className="text-xs">?</span></button>
-            <button className="px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-50 flex items-center gap-1">☷ All Filters</button>
-          </div>
+
 
           {businesses.length === 0 ? (
             <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500">
@@ -189,8 +216,13 @@ export default function LandingPage() {
                           <MessageCircle size={16} /> WhatsApp
                         </a>
                       )}
-                      <button className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded flex items-center gap-2 hover:bg-blue-700 ml-auto md:ml-0">
-                        <MessageCircle size={16} /> Get Best Deal
+                      <button 
+                        onClick={() => {
+                          setSelectedBusinessForEnquiry(b);
+                          setShowEnquiryModal(true);
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded flex items-center gap-2 hover:bg-blue-700 ml-auto md:ml-0">
+                        <MessageCircle size={16} /> Enquire Now
                       </button>
                     </div>
                   </div>
@@ -219,43 +251,6 @@ export default function LandingPage() {
 
         {/* Sidebar Internal Linking */}
         <div className="space-y-6">
-          {/* Lead Gen Sidebar */}
-          <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm sticky top-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              Get the List of Top <span className="text-blue-600">{qCategory}</span>
-            </h3>
-            <p className="text-xs text-slate-500 mb-6">We'll send you contact details in seconds for free</p>
-
-            <form className="space-y-4" onSubmit={e => e.preventDefault()}>
-              <div>
-                <p className="text-sm font-semibold text-slate-800 mb-3">Which type of Phone are you looking for?</p>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" name="phone_type" className="text-blue-600" defaultChecked />
-                    Android
-                  </label>
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" name="phone_type" className="text-blue-600" />
-                    Iphone
-                  </label>
-                </div>
-              </div>
-
-              <div className="pt-2 relative">
-                <input type="text" placeholder="Name" className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-blue-500" />
-                <span className="absolute left-3 top-4.5 text-slate-400"></span>
-              </div>
-              
-              <div className="relative">
-                <input type="tel" placeholder="Mobile Number" className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded text-sm focus:outline-none focus:border-blue-500" />
-                <span className="absolute left-3 top-2.5 text-slate-400"></span>
-              </div>
-
-              <button className="w-full bg-blue-600 text-white font-bold py-3 rounded mt-2 hover:bg-blue-700 transition">
-                Send Enquiry
-              </button>
-            </form>
-          </div>
 
           {related_searches.length > 0 && (
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -296,6 +291,83 @@ export default function LandingPage() {
           )}
         </div>
       </div>
+
+      {/* Enquiry Modal */}
+      {showEnquiryModal && selectedBusinessForEnquiry && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => {
+                setShowEnquiryModal(false);
+                setSelectedBusinessForEnquiry(null);
+              }}
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 transition"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="p-6 border-b border-slate-100 bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800">Send an Enquiry</h2>
+              <p className="text-sm text-slate-500 mt-1">Submit your details and {selectedBusinessForEnquiry.business_name} will get back to you.</p>
+            </div>
+            
+            <form onSubmit={handleEnquirySubmit} className="p-6">
+              {enquirySuccess ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-2">Enquiry Sent!</h3>
+                  <p className="text-slate-500">The business owner has received your request.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Your Name <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. John Doe"
+                      value={enquiryForm.name}
+                      onChange={e => setEnquiryForm({...enquiryForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '')})}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Contact Info (Phone) <span className="text-red-500">*</span></label>
+                    <input 
+                      type="tel" 
+                      required
+                      placeholder="e.g. 9876543210"
+                      value={enquiryForm.phone}
+                      onChange={e => setEnquiryForm({...enquiryForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Service Interest <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="What are you looking for?"
+                      value={enquiryForm.service}
+                      onChange={e => setEnquiryForm({...enquiryForm, service: e.target.value})}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    disabled={enquiryLoading}
+                    className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold mt-2 hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {enquiryLoading ? 'Submitting...' : 'Submit Enquiry'}
+                  </button>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

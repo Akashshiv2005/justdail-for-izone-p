@@ -512,6 +512,17 @@ def update_owner_document(business_id: int, doc_id: int, file: UploadFile = File
     db.commit()
     return {"message": "Document updated successfully", "id": b_doc.id}
 
+@router.delete("/api/owner/{business_id}/documents/{doc_id}")
+def delete_owner_document(business_id: int, doc_id: int, db: Session = Depends(get_db)):
+    b_doc = db.query(BusinessDocument).filter(BusinessDocument.id == doc_id, BusinessDocument.business_id == business_id).first()
+    if not b_doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    db.delete(b_doc)
+    db.commit()
+    return {"message": "Document deleted successfully"}
+
+
 # ======================== INVOICES ========================
 
 @router.get("/api/owner/{business_id}/invoices")

@@ -138,11 +138,12 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
           'Services Offered': 'services_offered',
           'Cover Banner URL': 'cover_banner_url',
           'GST Certificate URL': 'gst_certificate_url',
+          'PAN Card URL': 'pan_card_doc_url',
           'Sunday Hours': 'sunday_hours',
-          'slug': 'slug',
-          'seo_title': 'seo_title',
-          'seo_description': 'seo_description',
-          'seo_keywords': 'seo_keywords'
+          'Custom Slug': 'slug',
+          'Meta Title': 'seo_title',
+          'Meta Description': 'seo_description',
+          'SEO Keywords': 'seo_keywords'
         };
         const mappedPayload: any = {};
         for (const [k, v] of Object.entries(editFormData)) {
@@ -1234,6 +1235,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                             {[
                               { key: 'Registration Certificate URL', label: 'Registration Certificate URL' },
                               { key: 'GST Certificate URL', label: 'GST Certificate URL' },
+                              { key: 'PAN Card URL', label: 'PAN Card URL' },
                             ].map(({ key, label }) => {
                               const val = editFormData[key] ?? editingRow[key] ?? '';
                               return (

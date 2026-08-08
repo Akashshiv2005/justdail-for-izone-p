@@ -199,6 +199,20 @@ def search_businesses(
 
     # Fetch optimized dataset
     all_businesses = query.all()
+    
+    from app.models.verification_models import BusinessDocument, VerificationStatusEnum
+    biz_ids = [b.id for b in all_businesses]
+    if biz_ids:
+        docs = db.query(BusinessDocument).filter(
+            BusinessDocument.business_id.in_(biz_ids),
+            BusinessDocument.doc_type == "Business Logo",
+            BusinessDocument.status == VerificationStatusEnum.verified
+        ).all()
+        doc_map = {d.business_id: d.document_url for d in docs}
+        for b in all_businesses:
+            if b.id in doc_map and not b.logo_url:
+                b.logo_url = doc_map[b.id]
+
     results = []
 
     if lat is not None and lng is not None:

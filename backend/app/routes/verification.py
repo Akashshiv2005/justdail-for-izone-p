@@ -178,13 +178,27 @@ async def register_enterprise_business(
         loc = os.path.join(UPLOAD_DIR, f"{business.id}_logo_{logo_file.filename}")
         with open(loc, "wb") as buf:
             shutil.copyfileobj(logo_file.file, buf)
-        business.logo_url = f"/uploads/{business.id}_logo_{logo_file.filename}"
+        rel_path = f"/uploads/{business.id}_logo_{logo_file.filename}"
+        business.logo_url = rel_path
+        db.add(BusinessDocument(
+            business_id=business.id,
+            doc_type="Business Logo",
+            document_url=rel_path,
+            status=VerificationStatusEnum.pending
+        ))
         
     if cover_file:
         loc = os.path.join(UPLOAD_DIR, f"{business.id}_cover_{cover_file.filename}")
         with open(loc, "wb") as buf:
             shutil.copyfileobj(cover_file.file, buf)
-        business.cover_image_url = f"/uploads/{business.id}_cover_{cover_file.filename}"
+        rel_path = f"/uploads/{business.id}_cover_{cover_file.filename}"
+        business.cover_image_url = rel_path
+        db.add(BusinessDocument(
+            business_id=business.id,
+            doc_type="Cover Banner",
+            document_url=rel_path,
+            status=VerificationStatusEnum.pending
+        ))
 
     db.commit()
 
@@ -259,6 +273,8 @@ def approve_document(doc_id: int, db: Session = Depends(get_db)):
             b.verification_doc_url = doc.document_url
         elif doc.doc_type == "GST Certificate":
             b.gstin_doc_url = doc.document_url
+        elif doc.doc_type == "PAN Card":
+            b.pan_card_doc_url = doc.document_url
 
     if b and p:
         q_res = QualityScoreEvaluator.calculate_business_quality(b, p, docs)
