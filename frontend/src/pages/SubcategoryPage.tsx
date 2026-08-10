@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, Phone, CheckCircle2, Search, ArrowRight, ShieldCheck, ChevronRight } from 'lucide-react';
+import { apiClient } from '../lib/api';
+
 
 interface Business {
   id: number;
@@ -26,7 +28,7 @@ export default function SubcategoryPage() {
       try {
         setLoading(true);
         // Search API with category term
-        const res = await fetch(`/api/search?q=${subcategoryName}`);
+        const res = await apiClient(`/api/search?q=${subcategoryName}`);
         if (res.ok) {
           const data = await res.json();
           setBusinesses(data);

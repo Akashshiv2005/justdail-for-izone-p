@@ -317,6 +317,12 @@ def get_business_by_slug(slug: str, db: Session = Depends(get_db)):
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
         
+    # Task 2: Increment profile views on customer view
+    if biz.profile_views is None:
+        biz.profile_views = 0
+    biz.profile_views += 1
+    db.commit()
+        
     from app.models.verification_models import BusinessDocument, VerificationStatusEnum
     docs = db.query(BusinessDocument).filter(
         BusinessDocument.business_id == biz.id,

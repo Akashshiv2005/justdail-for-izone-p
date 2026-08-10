@@ -3,6 +3,9 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Search, MapPin, Star, CheckCircle, Phone, MessageCircle, ArrowRight, HelpCircle, Globe, ChevronRight, ThumbsUp, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SEOHead from '../components/common/SEOHead';
+import Navbar from '../components/common/Navbar';
+import { apiClient } from '../lib/api';
+
 
 export default function LandingPage() {
   const { category, city, area } = useParams<{ category?: string; city?: string; area?: string }>();
@@ -28,7 +31,7 @@ export default function LandingPage() {
     setEnquiryLoading(true);
     
     try {
-      const response = await fetch(`/api/business/${selectedBusinessForEnquiry.id}/enquire`, {
+      const response = await apiClient(`/api/business/${selectedBusinessForEnquiry.id}/enquire`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,7 +63,7 @@ export default function LandingPage() {
     });
     if (qArea) params.append('area', qArea);
 
-    fetch(`/api/seo/landing-page?${params.toString()}`)
+    apiClient(`/api/seo/landing-page?${params.toString()}`)
       .then(res => res.json())
       .then(resData => {
         setData(resData);
@@ -100,6 +103,7 @@ export default function LandingPage() {
         ogDescription={meta.og_description}
         schemas={schemas}
       />
+      <Navbar />
       {/* Header / Hero Banner */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-slate-900 text-white py-12 px-4 sm:px-8">
         <div className="max-w-6xl mx-auto">

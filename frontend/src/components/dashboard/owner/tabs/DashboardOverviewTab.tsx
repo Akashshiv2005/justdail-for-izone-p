@@ -111,7 +111,7 @@ export default function DashboardOverviewTab({ profile }: { profile: OwnerProfil
           { title: 'Total Profile Views', value: stats?.profile_views || profile?.profile_views || '0', change: '+0%', color: 'from-blue-500 to-cyan-400', icon: Globe, shadow: 'shadow-blue-500/20' },
           { title: 'Leads Generated', value: stats?.leads_generated || '0', change: '+0%', color: 'from-emerald-500 to-teal-400', icon: Target, shadow: 'shadow-emerald-500/20' },
           { title: 'Customer Messages', value: stats?.customer_messages || '0', change: '+0%', color: 'from-amber-500 to-orange-400', icon: MessageCircle, shadow: 'shadow-amber-500/20' },
-          { title: 'Profile Rating', value: profile?.average_rating || '0.0', change: 'N/A', color: 'from-purple-500 to-pink-400', icon: Star, shadow: 'shadow-purple-500/20' },
+          { title: 'Profile Rating', value: stats?.profile_rating || profile?.average_rating || '0.0', change: 'N/A', color: 'from-purple-500 to-pink-400', icon: Star, shadow: 'shadow-purple-500/20' },
         ].map((stat, i) => (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -163,7 +163,7 @@ export default function DashboardOverviewTab({ profile }: { profile: OwnerProfil
           </div>
           <div className="p-6 h-[350px] flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={profileActivityData}>
+              <LineChart data={stats?.activity_data || profileActivityData}>
                 <defs>
                   <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>

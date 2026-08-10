@@ -9,6 +9,7 @@ import {
 interface OwnerProfile {
   business_name?: string;
   is_verified?: boolean;
+  logo_url?: string;
 }
 
 const navItems = [
@@ -60,9 +61,13 @@ export default function OwnerSidebar({
         <div className="p-4 pt-6 shrink-0 flex items-center justify-between md:block">
           <div className="bg-[#0B1C47] rounded-xl p-4 text-white relative overflow-hidden shadow-md flex-1 md:flex-none">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shrink-0 border-2 border-white/20">
-                <span className="font-bold text-sm">{(profile?.business_name || 'SM').slice(0, 2).toUpperCase()}</span>
-              </div>
+              {profile?.logo_url ? (
+                <img src={profile.logo_url} alt="Logo" className="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-white/20 bg-white" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shrink-0 border-2 border-white/20">
+                  <span className="font-bold text-sm">{(profile?.business_name || 'SM').slice(0, 2).toUpperCase()}</span>
+                </div>
+              )}
               <div>
                 <h3 className="font-semibold text-sm leading-tight text-white/90">{profile?.business_name || 'Business Owner'}</h3>
                 <div className="flex items-center gap-1 mt-1 bg-green-500/20 text-green-400 w-fit px-1.5 py-0.5 rounded text-[10px] font-bold border border-green-500/30">

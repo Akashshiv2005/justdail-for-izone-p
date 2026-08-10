@@ -4,6 +4,8 @@ import {
   Eye, Award, Star, Filter, RefreshCw, Search, ShieldAlert 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiClient } from '../../../lib/api';
+
 
 export default function VerificationPanel() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -20,7 +22,7 @@ export default function VerificationPanel() {
 
   const fetchRequests = () => {
     setLoading(true);
-    fetch('/api/admin/verification/list', {
+    apiClient('/api/admin/verification/list', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -39,7 +41,7 @@ export default function VerificationPanel() {
   }, []);
 
   const handleApproveDoc = (docId: number) => {
-    fetch(`/api/admin/verification/approve-doc?doc_id=${docId}`, {
+    apiClient(`/api/admin/verification/approve-doc?doc_id=${docId}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
@@ -57,7 +59,7 @@ export default function VerificationPanel() {
   };
 
   const handleApproveBusiness = (bizId: number) => {
-    fetch(`/api/admin/business/${bizId}/approve`, {
+    apiClient(`/api/admin/business/${bizId}/approve`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
@@ -80,7 +82,7 @@ export default function VerificationPanel() {
     setIsDeletingBulk(true);
     try {
       const ids = Array.from(selectedRows);
-      const promises = ids.map(id => fetch(`/api/admin/business/${id}`, { 
+      const promises = ids.map(id => apiClient(`/api/admin/business/${id}`, { 
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       }));

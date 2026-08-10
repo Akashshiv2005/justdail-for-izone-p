@@ -191,9 +191,13 @@ export default function BusinessOwnerDashboard() {
                 className="flex items-center gap-3 cursor-pointer group"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-100 text-blue-700 overflow-hidden border border-blue-200 group-hover:border-blue-400 transition-colors shrink-0 flex items-center justify-center font-bold">
-                  {profile?.owner_name ? profile.owner_name.charAt(0).toUpperCase() : 'O'}
-                </div>
+                {profile?.logo_url ? (
+                  <img src={profile.logo_url} alt="Logo" className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover shrink-0 border border-blue-200 group-hover:border-blue-400 transition-colors bg-white" />
+                ) : (
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-100 text-blue-700 overflow-hidden border border-blue-200 group-hover:border-blue-400 transition-colors shrink-0 flex items-center justify-center font-bold">
+                    {profile?.owner_name ? profile.owner_name.charAt(0).toUpperCase() : 'O'}
+                  </div>
+                )}
                 <div className="hidden md:block">
                   <p className="text-sm font-bold text-slate-900 leading-none">{profile?.owner_name || 'Owner'}</p>
                   <p className="text-[11px] font-medium text-slate-500 mt-1">{profile?.business_name || profile?.category || 'Business'}</p>
@@ -204,9 +208,13 @@ export default function BusinessOwnerDashboard() {
               {showProfileMenu && (
                 <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xl">
-                      {profile?.owner_name ? profile.owner_name.charAt(0).toUpperCase() : 'O'}
-                    </div>
+                    {profile?.logo_url ? (
+                      <img src={profile.logo_url} alt="Logo" className="w-12 h-12 rounded-full object-cover bg-white" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xl">
+                        {profile?.owner_name ? profile.owner_name.charAt(0).toUpperCase() : 'O'}
+                      </div>
+                    )}
                     <div>
                       <h4 className="font-bold text-slate-900">{profile?.owner_name || 'Owner'}</h4>
                       <p className="text-xs text-slate-500">{profile?.business_name || 'Business Name'}</p>

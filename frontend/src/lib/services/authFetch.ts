@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Authenticated fetch helper.
  * Wraps the native fetch API to automatically attach the JWT token
  * from localStorage and use relative URLs (proxied by Vite).
@@ -16,7 +16,33 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
     headers.set('Content-Type', 'application/json');
   }
 
-  return fetch(url, { ...options, headers });
+  const baseUrl = import.meta.env.VITE_API_URL || '';
+  let finalUrl = url;
+  if (baseUrl) {
+      if (url.startsWith('/api')) {
+          if (baseUrl.endsWith('/api')) {
+              finalUrl = baseUrl + url.substring(4);
+          } else {
+              finalUrl = baseUrl + url;
+          }
+      } else {
+          finalUrl = baseUrl + url;
+      }
+  }
+
+  try {
+    const response = await fetch(finalUrl, { ...options, headers });
+    return response;
+  } catch (error) {
+    console.error('Network or Server Error in authFetch:', error);
+    return {
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: async () => ({ detail: "A server error occurred. Please try again later." }),
+      text: async () => "A server error occurred."
+    } as Response;
+  }
 }
 
 /**

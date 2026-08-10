@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+import { apiClient } from '../lib/api';
+
   Building2, User, Mail, Lock, Phone, MapPin,
   FileText, CheckCircle2, ArrowRight, ArrowLeft,
   Briefcase, ShieldCheck, FileCheck2, Target, TrendingUp, X, File
@@ -62,7 +64,7 @@ const Register = () => {
       if (panFile) formData.append('pan_doc', panFile);
       if (gstFile) formData.append('gstin_doc', gstFile);
 
-      const res = await fetch('/api/auth/register', {
+      const res = await apiClient('/api/auth/register', {
         method: 'POST',
         body: formData,
       });

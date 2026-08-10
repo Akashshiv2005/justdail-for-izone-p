@@ -5,6 +5,8 @@ import {
   MapPin, Clock, Award, FileText, Upload, CreditCard, ChevronRight, ChevronLeft, Check, Sparkles, Globe, DollarSign, Image, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { apiClient } from '../lib/api';
+
 
 export default function EnterpriseRegister() {
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ export default function EnterpriseRegister() {
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
 
   useEffect(() => {
-    fetch('/api/admin/categories/')
+    apiClient('/api/admin/categories/')
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
@@ -206,7 +208,7 @@ export default function EnterpriseRegister() {
   useEffect(() => {
     const selectedCat = categories.find(c => c.name === formData.category);
     if (selectedCat) {
-      fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
+      apiClient(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
         .then(res => res.json())
         .then(data => setSubCategories(data))
         .catch(err => console.error("Error fetching subcategories:", err));
@@ -270,7 +272,7 @@ export default function EnterpriseRegister() {
 
   const sendOtp = async (destination: string, type: 'email' | 'mobile') => {
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await apiClient('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ destination, type })
@@ -350,7 +352,7 @@ export default function EnterpriseRegister() {
       if (formData.logoFile) data.append('logo_file', formData.logoFile);
       if (formData.coverFile) data.append('cover_file', formData.coverFile);
 
-      const res = await fetch('/api/auth/register-enterprise', {
+      const res = await apiClient('/api/auth/register-enterprise', {
         method: 'POST',
         body: data,
       });

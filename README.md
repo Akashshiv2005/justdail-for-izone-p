@@ -61,7 +61,7 @@ pip install -r requirements.txt
 
 # 3. Create the Database Schema
 # Start the server once to automatically create the 'bizdial' schema in Postgres
-python -m uvicorn app.main:app--reload --port 8000
+python -m uvicorn app.main:app  --reload --port 8000
 # (Press CTRL+C after you see "Application startup complete")
 
 # 4. Run Alembic migrations to create/update database tables

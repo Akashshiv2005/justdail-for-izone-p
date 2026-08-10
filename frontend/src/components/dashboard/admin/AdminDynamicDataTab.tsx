@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { authFetch } from '../../../lib/services/authFetch';
 import { Building2, PhoneCall, CheckCircle2, Menu, X, Edit3, MapPin, UserSquare2, Target, Users, AlertCircle, Star, ChevronLeft, MessageSquare, Clock, Tag, Image, FileText, ExternalLink } from 'lucide-react';
+import { apiClient } from '../../../lib/api';
+
 
 export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: string, onOpenSidebar: () => void }) {
   const [editingRow, setEditingRow] = useState<any>(null);
@@ -49,7 +51,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   };
 
   useEffect(() => {
-    fetch('/api/admin/categories/')
+    apiClient('/api/admin/categories/')
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
@@ -60,7 +62,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
     if (selectedCatName && categories.length > 0) {
       const selectedCat = categories.find(c => c.name === selectedCatName);
       if (selectedCat) {
-        fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
+        apiClient(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
           .then(res => res.json())
           .then(data => setSubCategories(data))
           .catch(err => console.error("Error fetching subcategories:", err));
