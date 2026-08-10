@@ -30,6 +30,22 @@ export default function EnterpriseRegister() {
       .catch(err => console.error("Error fetching categories:", err));
   }, []);
 
+  useEffect(() => {
+    if (!formData.category) {
+      setSubCategories([]);
+      return;
+    }
+    const selectedCat = categories.find(c => c.name === formData.category);
+    if (selectedCat) {
+      fetch(`${API_BASE}/admin/subcategories/?category_id=${selectedCat.id}`)
+        .then(res => res.json())
+        .then(data => setSubCategories(Array.isArray(data) ? data : []))
+        .catch(err => console.error("Error fetching subcategories:", err));
+    } else {
+      setSubCategories([]);
+    }
+  }, [formData.category, categories]);
+
 
 
   // Default Form State matching all 12 Steps
