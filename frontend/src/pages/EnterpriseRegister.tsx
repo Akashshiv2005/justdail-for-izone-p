@@ -270,7 +270,7 @@ export default function EnterpriseRegister() {
 
   const sendOtp = async (destination: string, type: 'email' | 'mobile') => {
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ destination, type })
@@ -350,7 +350,7 @@ export default function EnterpriseRegister() {
       if (formData.logoFile) data.append('logo_file', formData.logoFile);
       if (formData.coverFile) data.append('cover_file', formData.coverFile);
 
-      const res = await fetch('/api/auth/register-enterprise', {
+      const res = await fetch(`${API_BASE}/auth/register-enterprise`, {
         method: 'POST',
         body: data,
       });
