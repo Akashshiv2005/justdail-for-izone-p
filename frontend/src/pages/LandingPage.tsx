@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Search, MapPin, Star, CheckCircle, Phone, MessageCircle, ArrowRight, HelpCircle, Globe, ChevronRight, ThumbsUp, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SEOHead from '../components/common/SEOHead';
+import { API_BASE } from '../lib/services/api';
 
 export default function LandingPage() {
   const { category, city, area } = useParams<{ category?: string; city?: string; area?: string }>();
@@ -28,7 +29,7 @@ export default function LandingPage() {
     setEnquiryLoading(true);
     
     try {
-      const response = await fetch(`/api/business/${selectedBusinessForEnquiry.id}/enquire`, {
+      const response = await fetch(`${API_BASE}/business/${selectedBusinessForEnquiry.id}/enquire`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,7 +61,7 @@ export default function LandingPage() {
     });
     if (qArea) params.append('area', qArea);
 
-    fetch(`/api/seo/landing-page?${params.toString()}`)
+    fetch(`${API_BASE}/seo/landing-page?${params.toString()}`)
       .then(res => res.json())
       .then(resData => {
         setData(resData);
