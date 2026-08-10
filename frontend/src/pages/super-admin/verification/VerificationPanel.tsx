@@ -4,7 +4,7 @@ import {
   Eye, Award, Star, Filter, RefreshCw, Search, ShieldAlert 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { authFetch } from '../../../../lib/services/authFetch';
+import { authFetch } from '../../../lib/services/authFetch';
 
 export default function VerificationPanel() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -22,12 +22,12 @@ export default function VerificationPanel() {
   const fetchRequests = () => {
     setLoading(true);
     authFetch('/api/admin/verification/list')
-      .then(res => res.json())
-      .then(data => {
+      .then((res: Response) => res.json())
+      .then((data: any) => {
         setRequests(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err: any) => {
         console.error(err);
         setLoading(false);
       });
