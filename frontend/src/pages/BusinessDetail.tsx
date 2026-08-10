@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, CheckCircle, Phone, MessageCircle, Share2, Edit2, Bookmark, Clock, Award, Check } from 'lucide-react';
 import SEOHead from '../components/common/SEOHead';
+import MainHeader from '../components/home/MainHeader';
 
 export default function BusinessDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -118,6 +119,8 @@ export default function BusinessDetail() {
         })}
       </script>
 
+      <MainHeader />
+
       {/* Breadcrumb */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 py-2 text-xs text-slate-500 flex items-center gap-2">
@@ -159,7 +162,7 @@ export default function BusinessDetail() {
                     </span>
                     {business.is_verified && (
                       <span className="flex items-center text-sm font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
-                        <CheckCircle size={14} className="mr-1 text-slate-700" /> Claimed
+                        <CheckCircle size={14} className="mr-1 text-slate-700" /> Verified
                       </span>
                     )}
                   </div>
