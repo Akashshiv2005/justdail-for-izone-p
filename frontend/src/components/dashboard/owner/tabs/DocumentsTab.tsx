@@ -178,7 +178,7 @@ export default function DocumentsTab({ businessId }: { businessId: string }) {
                     <td className="px-6 py-4 text-right flex justify-end gap-3">
                       {doc.document_url && (
                         <a 
-                          href={`http://127.0.0.1:8000${doc.document_url}`} 
+                          href={doc.document_url.startsWith('http') ? doc.document_url : `http://127.0.0.1:8000${doc.document_url}`} 
                           target="_blank" 
                           rel="noreferrer"
                           className="text-blue-600 font-medium hover:underline text-xs"

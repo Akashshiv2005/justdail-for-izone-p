@@ -1,4 +1,5 @@
 from app.database import engine
+# pyrefly: ignore [missing-import]
 from sqlalchemy import text
 
 with engine.begin() as conn:

@@ -478,15 +478,24 @@ def get_owner_documents(business_id: int, db: Session = Depends(get_db)):
 
 @router.post("/api/owner/{business_id}/documents")
 def upload_owner_document(business_id: int, doc_type: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    loc = os.path.join(UPLOAD_DIR, f"{business_id}_{doc_type}_{file.filename}")
-    with open(loc, "wb") as buf:
-        shutil.copyfileobj(file.file, buf)
-    rel_path = f"/uploads/{business_id}_{doc_type}_{file.filename}"
+    from app.services.minio_service import upload_file_to_minio
+    
+    file_url = upload_file_to_minio(file, business_id, doc_type)
+    
+    # Check if doc_type is Logo or Cover and update Business model
+    if doc_type in ['Business Logo', 'Cover Banner']:
+        business = db.query(Business).filter(Business.id == business_id).first()
+        if business:
+            if doc_type == 'Business Logo':
+                business.logo_url = file_url
+            else:
+                business.cover_image_url = file_url
+
     
     b_doc = BusinessDocument(
         business_id=business_id,
         doc_type=doc_type,
-        document_url=rel_path,
+        document_url=file_url,
         status=VerificationStatusEnum.pending
     )
     db.add(b_doc)
@@ -500,12 +509,19 @@ def update_owner_document(business_id: int, doc_id: int, file: UploadFile = File
     if not b_doc:
         raise HTTPException(status_code=404, detail="Document not found")
         
-    loc = os.path.join(UPLOAD_DIR, f"{business_id}_{b_doc.doc_type}_{file.filename}")
-    with open(loc, "wb") as buf:
-        shutil.copyfileobj(file.file, buf)
-    rel_path = f"/uploads/{business_id}_{b_doc.doc_type}_{file.filename}"
+    from app.services.minio_service import upload_file_to_minio
+    file_url = upload_file_to_minio(file, business_id, b_doc.doc_type)
     
-    b_doc.document_url = rel_path
+    # Check if doc_type is Logo or Cover and update Business model
+    if b_doc.doc_type in ['Business Logo', 'Cover Banner']:
+        business = db.query(Business).filter(Business.id == business_id).first()
+        if business:
+            if b_doc.doc_type == 'Business Logo':
+                business.logo_url = file_url
+            else:
+                business.cover_image_url = file_url
+    
+    b_doc.document_url = file_url
     b_doc.status = VerificationStatusEnum.pending
     b_doc.rejection_reason = None
     
