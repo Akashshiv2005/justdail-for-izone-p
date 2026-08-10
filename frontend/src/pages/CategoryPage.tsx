@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, Phone, CheckCircle2, Search, ArrowRight, ShieldCheck, ChevronRight } from 'lucide-react';
-import { apiClient } from '../lib/api';
-
 
 interface Subcategory {
   id: number;
@@ -35,13 +33,13 @@ export default function CategoryPage() {
       try {
         setLoading(true);
         // Fetch categories list to match slug
-        const res = await apiClient('/api/categories');
+        const res = await fetch('/api/categories');
         if (res.ok) {
           const cats = await res.json();
           const matched = cats.find((c: any) => c.slug === categorySlug);
           if (matched) {
             // Fetch subcategories for matched category
-            const subRes = await apiClient(`/api/admin/subcategories/?category_id=${matched.id}`);
+            const subRes = await fetch(`/api/admin/subcategories/?category_id=${matched.id}`);
             const subs = subRes.ok ? await subRes.json() : [];
             setCategory({ ...matched, subcategories: subs });
             setSubcategories(subs);

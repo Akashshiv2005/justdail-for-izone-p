@@ -1,10 +1,5 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 from app.database import engine, Base
 import app.models.user
 import app.models.business
@@ -48,24 +43,13 @@ def startup_event():
     pass
 
 
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-allow_origins = [frontend_url] if os.getenv("DEBUG", "False").lower() != "true" else ["*"]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    # Log the exception stack trace here if logging is configured
-    return JSONResponse(
-        status_code=500,
-        content={"message": "An unexpected server error occurred. Please try again later."},
-    )
 
 app.include_router(search_router)
 app.include_router(homepage_router)
