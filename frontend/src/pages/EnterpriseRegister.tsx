@@ -5,7 +5,7 @@ import {
   MapPin, Clock, Award, FileText, Upload, CreditCard, ChevronRight, ChevronLeft, Check, Sparkles, Globe, DollarSign, Image, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { API_BASE } from '../lib/services/api';
 export default function EnterpriseRegister() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(() => {
@@ -24,7 +24,7 @@ export default function EnterpriseRegister() {
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
 
   useEffect(() => {
-    fetch('/api/admin/categories/')
+    fetch(`${API_BASE}/admin/categories/`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
