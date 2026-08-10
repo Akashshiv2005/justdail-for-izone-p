@@ -7,7 +7,6 @@ from app.auth_utils import get_password_hash, verify_password, create_access_tok
 from datetime import timedelta
 import os
 import shutil
-from app.routes.seo import slugify
 
 router = APIRouter()
 
@@ -126,7 +125,7 @@ async def register_business(
         seo_title=seo_title,
         seo_description=seo_description,
         seo_keywords=seo_keywords,
-        slug=seo_slug or slugify(business_name)
+        slug=seo_slug
     )
     db.add(new_business)
     db.commit()

@@ -10,7 +10,6 @@ from app.auth_utils import get_password_hash, get_current_admin
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import os, shutil
-from app.routes.seo import slugify
 
 router = APIRouter()
 
@@ -116,7 +115,7 @@ async def register_enterprise_business(
         seo_title=seo_title,
         seo_description=seo_description,
         seo_keywords=seo_keywords,
-        slug=seo_slug or slugify(business_name)
+        slug=seo_slug
     )
     db.add(business)
     db.commit()

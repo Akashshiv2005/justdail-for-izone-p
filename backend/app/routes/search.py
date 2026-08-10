@@ -313,17 +313,7 @@ def get_all_categories(db: Session = Depends(get_db)):
 
 @router.get("/api/business/{slug}")
 def get_business_by_slug(slug: str, db: Session = Depends(get_db)):
-    if slug.isdigit():
-        biz = db.query(Business).filter(
-            (Business.id == int(slug)) | (Business.slug == slug),
-            Business.approval_status == "Approved"
-        ).first()
-    else:
-        biz = db.query(Business).filter(
-            Business.slug == slug,
-            Business.approval_status == "Approved"
-        ).first()
-        
+    biz = db.query(Business).filter(Business.slug == slug, Business.approval_status == "Approved").first()
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
         
@@ -388,13 +378,7 @@ class PublicReviewCreate(BaseModel):
 
 @router.post("/api/business/{slug}/rate")
 def submit_public_review(slug: str, payload: PublicReviewCreate, db: Session = Depends(get_db)):
-    if slug.isdigit():
-        biz = db.query(Business).filter(
-            (Business.id == int(slug)) | (Business.slug == slug)
-        ).first()
-    else:
-        biz = db.query(Business).filter(Business.slug == slug).first()
-        
+    biz = db.query(Business).filter(Business.slug == slug).first()
     if not biz:
         raise HTTPException(status_code=404, detail="Business not found")
         
