@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { authFetch } from '../../../../lib/services/authFetch';
+import { getMediaUrl } from '../../../../lib/services/api';
 
 export default function DocumentsTab({ businessId }: { businessId: string }) {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -178,7 +179,7 @@ export default function DocumentsTab({ businessId }: { businessId: string }) {
                     <td className="px-6 py-4 text-right flex justify-end gap-3">
                       {doc.document_url && (
                         <a 
-                          href={`http://127.0.0.1:8000${doc.document_url}`} 
+                          href={getMediaUrl(doc.document_url)} 
                           target="_blank" 
                           rel="noreferrer"
                           className="text-blue-600 font-medium hover:underline text-xs"

@@ -17,11 +17,8 @@ from typing import Optional, List, Dict, Any
 
 router = APIRouter()
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-BASE_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+from app.config import FRONTEND_URL, get_frontend_url
+BASE_URL = FRONTEND_URL.rstrip('/') if FRONTEND_URL else ""
 
 def slugify(text: str) -> str:
     if not text:
@@ -293,7 +290,7 @@ def get_dynamic_landing_page(
 @router.get("/sitemap.xml")
 def sitemap_index(request: Request, db: Session = Depends(get_db)):
     """Master sitemap index pointing to child sitemaps."""
-    base_url = str(request.base_url).rstrip('/')
+    base_url = get_frontend_url(request)
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     for child in ["sitemap-static.xml", "sitemap-categories.xml", "sitemap-locations.xml", "sitemap-businesses.xml"]:
@@ -303,8 +300,9 @@ def sitemap_index(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/sitemap-static.xml")
-def sitemap_static():
+def sitemap_static(request: Request):
     """Static pages sitemap."""
+    base_url = get_frontend_url(request)
     pages = [
         ("/", "daily", "1.0"),
         ("/search", "daily", "0.9"),
@@ -314,17 +312,18 @@ def sitemap_static():
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     for path, freq, priority in pages:
-        xml.append(f"  <url><loc>{BASE_URL}{path}</loc><changefreq>{freq}</changefreq><priority>{priority}</priority></url>")
+        xml.append(f"  <url><loc>{base_url}{path}</loc><changefreq>{freq}</changefreq><priority>{priority}</priority></url>")
     xml.append("</urlset>")
     return Response(content="\n".join(xml), media_type="application/xml")
 
 
 @router.get("/sitemap-categories.xml")
-def sitemap_categories(db: Session = Depends(get_db)):
+def sitemap_categories(request: Request, db: Session = Depends(get_db)):
     """
     Generate SEO pages for every Category × City/District combination.
     e.g. /mobile-shops/trichy, /restaurants/coimbatore
     """
+    base_url = get_frontend_url(request)
     categories = db.query(Category).all()
     districts = db.query(District).filter(District.is_active == True).all()
 
@@ -334,12 +333,12 @@ def sitemap_categories(db: Session = Depends(get_db)):
     for cat in categories:
         cat_slug = slugify(cat.name)
         # Category page (all India)
-        xml.append(f"  <url><loc>{BASE_URL}/{cat_slug}/india</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
+        xml.append(f"  <url><loc>{base_url}/{cat_slug}/india</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
 
         for d in districts:
             d_slug = slugify(d.name)
             # /mobile-shops/trichy
-            xml.append(f"  <url><loc>{BASE_URL}/{cat_slug}/{d_slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>")
+            xml.append(f"  <url><loc>{base_url}/{cat_slug}/{d_slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>")
 
             # Also generate area-level URLs within this district
             cities = db.query(City).filter(City.district_id == d.id, City.is_active == True).all()
@@ -348,35 +347,37 @@ def sitemap_categories(db: Session = Depends(get_db)):
                 for area in areas:
                     area_slug = slugify(area.name)
                     # /mobile-shops/thillai-nagar-trichy
-                    xml.append(f"  <url><loc>{BASE_URL}/{cat_slug}/{area_slug}-{d_slug}</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>")
+                    xml.append(f"  <url><loc>{base_url}/{cat_slug}/{area_slug}-{d_slug}</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>")
 
     xml.append("</urlset>")
     return Response(content="\n".join(xml), media_type="application/xml")
 
 
 @router.get("/sitemap-locations.xml")
-def sitemap_locations(db: Session = Depends(get_db)):
+def sitemap_locations(request: Request, db: Session = Depends(get_db)):
     """Location-only pages."""
+    base_url = get_frontend_url(request)
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
 
     districts = db.query(District).filter(District.is_active == True).all()
     for d in districts:
-        xml.append(f"  <url><loc>{BASE_URL}/search?city={slugify(d.name)}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
+        xml.append(f"  <url><loc>{base_url}/search?city={slugify(d.name)}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
 
     xml.append("</urlset>")
     return Response(content="\n".join(xml), media_type="application/xml")
 
 
 @router.get("/sitemap-businesses.xml")
-def sitemap_businesses(db: Session = Depends(get_db)):
+def sitemap_businesses(request: Request, db: Session = Depends(get_db)):
     """Individual business pages."""
+    base_url = get_frontend_url(request)
     businesses = db.query(Business).filter(Business.approval_status == "Approved").all()
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
     for b in businesses:
         slug = b.slug or b.id
-        xml.append(f"  <url><loc>{BASE_URL}/business/{slug}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
+        xml.append(f"  <url><loc>{base_url}/business/{slug}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
     xml.append("</urlset>")
     return Response(content="\n".join(xml), media_type="application/xml")
 

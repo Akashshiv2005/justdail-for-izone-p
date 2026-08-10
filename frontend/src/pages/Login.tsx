@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 
 import { useAuth } from '../lib/context/AuthContext';
-import { login as apiLogin } from '../lib/services/api';
+import { login as apiLogin, API_BASE } from '../lib/services/api';
 
 const Login = () => {
   const [role, setRole] = useState<'owner' | 'admin'>('owner');
@@ -54,7 +54,7 @@ const Login = () => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:8000/api/auth/forgot-password', {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: resetEmail, new_password: newPassword })
