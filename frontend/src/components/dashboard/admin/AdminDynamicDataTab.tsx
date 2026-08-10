@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { authFetch } from '../../../lib/services/authFetch';
+import { API_BASE, getMediaUrl } from '../../../lib/services/api';
 import { Building2, PhoneCall, CheckCircle2, Menu, X, Edit3, MapPin, UserSquare2, Target, Users, AlertCircle, Star, ChevronLeft, MessageSquare, Clock, Tag, Image, FileText, ExternalLink } from 'lucide-react';
 
 export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: string, onOpenSidebar: () => void }) {
@@ -49,7 +50,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   };
 
   useEffect(() => {
-    fetch('/api/admin/categories/')
+    fetch(`${API_BASE}/admin/categories/`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
@@ -60,7 +61,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
     if (selectedCatName && categories.length > 0) {
       const selectedCat = categories.find(c => c.name === selectedCatName);
       if (selectedCat) {
-        fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
+        fetch(`${API_BASE}/admin/subcategories/?category_id=${selectedCat.id}`)
           .then(res => res.json())
           .then(data => setSubCategories(data))
           .catch(err => console.error("Error fetching subcategories:", err));
@@ -1217,7 +1218,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                                       if (e.target.files?.[0]) handleFileUpload(e.target.files[0], key);
                                     }} />
                                   </label>
-                                  <a href={val ? (val.startsWith('http') ? val : `http://localhost:8000${val}`) : '#'} target={val ? "_blank" : undefined} rel="noreferrer" className={`flex items-center justify-center px-4 rounded-2xl transition-colors border shadow-sm shrink-0 ${val ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-slate-50 text-slate-400 border-slate-100 pointer-events-none'}`} title={val ? "View Image" : "No Image"}>
+                                  <a href={val ? getMediaUrl(val) : '#'} target={val ? "_blank" : undefined} rel="noreferrer" className={`flex items-center justify-center px-4 rounded-2xl transition-colors border shadow-sm shrink-0 ${val ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-slate-50 text-slate-400 border-slate-100 pointer-events-none'}`} title={val ? "View Image" : "No Image"}>
                                     <ExternalLink size={18} className={val ? "text-pink-600" : "text-slate-400"} />
                                   </a>
                                 </div>
@@ -1255,7 +1256,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
                                     }} />
                                   </label>
                                   {val && (
-                                    <a href={val.startsWith('http') ? val : `http://localhost:8000${val}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-colors border border-slate-200 shadow-sm shrink-0" title="View Document">
+                                    <a href={getMediaUrl(val)} target="_blank" rel="noreferrer" className="flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl transition-colors border border-slate-200 shadow-sm shrink-0" title="View Document">
                                       <ExternalLink size={18} className="text-emerald-600" />
                                     </a>
                                   )}

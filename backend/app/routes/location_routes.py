@@ -1,22 +1,19 @@
 import re
 import csv
 import io
-# pyrefly: ignore [missing-import]
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
-# pyrefly: ignore [missing-import]
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, Request
 from fastapi.responses import StreamingResponse
-# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
-# pyrefly: ignore [missing-import]
 from sqlalchemy import func
 from app.database import get_db
 from app.models.location import Country, State, District, City, Area, Locality, LocationSEO, LocationSlug, LocationKeyword
 from app.models.business import Business
 from app.models.category import Category
 from app.auth_utils import get_current_admin
-# pyrefly: ignore [missing-import]
 from pydantic import BaseModel
 from typing import Optional, List
+
+from app.config import get_frontend_url
 
 router = APIRouter()
 
@@ -75,6 +72,7 @@ def get_areas_by_city(city_id: int, db: Session = Depends(get_db)):
 @router.get("/api/location/resolve")
 def resolve_location_seo(
     slug: str = Query(..., description="e.g. state/tamil-nadu or mobile-shops/tiruchirappalli"),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
     """Resolves a location slug to SEO metadata, breadcrumbs, businesses, and schema."""
@@ -151,11 +149,12 @@ def resolve_location_seo(
         })
 
     # JSON-LD Schema
+    base_url = get_frontend_url(request)
     schema = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-            {"@type": "ListItem", "position": i + 1, "name": bc["name"], "item": f"http://localhost:5173{bc['url']}"}
+            {"@type": "ListItem", "position": i + 1, "name": bc["name"], "item": f"{base_url}{bc['url']}" if base_url else bc["url"]}
             for i, bc in enumerate(breadcrumbs)
         ]
     }
@@ -193,59 +192,65 @@ def get_search_index(db: Session = Depends(get_db)):
 # ──────────────────────────────────────────
 
 @router.get("/state-sitemap.xml")
-def state_sitemap(db: Session = Depends(get_db)):
+def state_sitemap(request: Request, db: Session = Depends(get_db)):
+    base_url = get_frontend_url(request)
     states = db.query(State).filter(State.is_active == True).all()
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for s in states:
-        lines.append(f"<url><loc>http://localhost:5173/state/{s.slug}</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>")
+        lines.append(f"<url><loc>{base_url}/state/{s.slug}</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>")
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
 
 @router.get("/district-sitemap.xml")
-def district_sitemap(db: Session = Depends(get_db)):
+def district_sitemap(request: Request, db: Session = Depends(get_db)):
+    base_url = get_frontend_url(request)
     districts = db.query(District).filter(District.is_active == True).all()
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for d in districts:
         state = db.query(State).filter(State.id == d.state_id).first()
         if state:
-            lines.append(f"<url><loc>http://localhost:5173/state/{state.slug}/{d.slug}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>")
+            lines.append(f"<url><loc>{base_url}/state/{state.slug}/{d.slug}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>")
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
 
 @router.get("/city-sitemap.xml")
-def city_sitemap(db: Session = Depends(get_db)):
+def city_sitemap(request: Request, db: Session = Depends(get_db)):
+    base_url = get_frontend_url(request)
     cities = db.query(City).filter(City.is_active == True).all()
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for c in cities:
-        lines.append(f"<url><loc>http://localhost:5173/search?city={c.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>")
+        lines.append(f"<url><loc>{base_url}/search?city={c.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>")
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
 
 @router.get("/area-sitemap.xml")
-def area_sitemap(db: Session = Depends(get_db)):
+def area_sitemap(request: Request, db: Session = Depends(get_db)):
+    base_url = get_frontend_url(request)
     areas = db.query(Area).filter(Area.is_active == True).all()
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for a in areas:
-        lines.append(f"<url><loc>http://localhost:5173/search?area={a.slug}</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>")
+        lines.append(f"<url><loc>{base_url}/search?area={a.slug}</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>")
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
 
 @router.get("/category-sitemap.xml")
-def category_sitemap(db: Session = Depends(get_db)):
+def category_sitemap(request: Request, db: Session = Depends(get_db)):
+    base_url = get_frontend_url(request)
     slugs = db.query(LocationSlug).filter(LocationSlug.entity_type.in_(["category_district", "category_area"])).all()
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for s in slugs[:500]:  # limit
-        lines.append(f"<url><loc>http://localhost:5173/{s.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>")
+        lines.append(f"<url><loc>{base_url}/{s.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>")
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
 
 @router.get("/business-sitemap.xml")
-def business_sitemap(db: Session = Depends(get_db)):
+def business_sitemap(request: Request, db: Session = Depends(get_db)):
+    base_url = get_frontend_url(request)
     businesses = db.query(Business).filter(Business.approval_status == "Approved").all()
     lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for b in businesses:
         slug = b.slug or b.id
-        lines.append(f"<url><loc>http://localhost:5173/business/{slug}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
+        lines.append(f"<url><loc>{base_url}/business/{slug}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>")
     lines.append("</urlset>")
     return Response(content="\n".join(lines), media_type="application/xml")
 

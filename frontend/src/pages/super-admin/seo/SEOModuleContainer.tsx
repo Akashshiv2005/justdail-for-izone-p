@@ -6,6 +6,7 @@ import {
   Plus, Edit3, Trash2, Search, Activity, BarChart3, FileText, Check, User, Rocket
 } from 'lucide-react';
 import { authFetch } from '../../../lib/services/authFetch';
+import { getBackendBaseUrl } from '../../../lib/services/api';
 
 interface SEOModuleContainerProps {
   moduleName: string;
@@ -371,7 +372,7 @@ function RobotsView() {
       .then(res => res.json())
       .then(data => {
         const disallowLines = (data.disallow_paths || []).map((p: string) => `Disallow: ${p}`).join('\n');
-        setRobotsText(`User-agent: *\nAllow: /\n${disallowLines}\n\nSitemap: ${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/sitemap.xml`);
+        setRobotsText(`User-agent: *\nAllow: /\n${disallowLines}\n\nSitemap: ${getBackendBaseUrl()}/sitemap.xml`);
       })
       .catch(console.error);
   }, []);
@@ -461,7 +462,7 @@ function SitemapView() {
           <p className="text-xs text-slate-500">Auto-generated instantly by the backend engine</p>
         </div>
         <a 
-          href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/sitemap.xml`} 
+          href={`${getBackendBaseUrl()}/sitemap.xml`} 
           target="_blank" 
           rel="noreferrer"
           className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition"

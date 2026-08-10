@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 
 import { useAuth } from '../lib/context/AuthContext';
-import { login as apiLogin } from '../lib/services/api';
+import { login as apiLogin, API_BASE } from '../lib/services/api';
 
 const Login = () => {
   const [role, setRole] = useState<'owner' | 'admin'>('owner');
@@ -54,7 +54,7 @@ const Login = () => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:8000/api/auth/forgot-password', {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: resetEmail, new_password: newPassword })
@@ -117,8 +117,6 @@ const Login = () => {
                   <label className="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
                   <input 
                     type="email"
-                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                    title="Please enter a valid email address" 
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -173,8 +171,6 @@ const Login = () => {
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Registered Email Address</label>
                 <input 
                   type="email"
-                  pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                  title="Please enter a valid email address" 
                   required
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}

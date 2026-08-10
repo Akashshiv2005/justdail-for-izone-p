@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, CheckCircle, Phone, MessageCircle, Share2, Edit2, Bookmark, Clock, Award, Check } from 'lucide-react';
 import SEOHead from '../components/common/SEOHead';
 import MainHeader from '../components/home/MainHeader';
+import { API_BASE } from '../lib/services/api';
 
 export default function BusinessDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -27,7 +28,7 @@ export default function BusinessDetail() {
     setEnquiryLoading(true);
     
     try {
-      const response = await fetch(`/api/business/${data.business.id}/enquire`, {
+      const response = await fetch(`${API_BASE}/business/${data.business.id}/enquire`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -51,7 +52,7 @@ export default function BusinessDetail() {
   };
 
   useEffect(() => {
-    fetch(`/api/business/${slug}`)
+    fetch(`${API_BASE}/business/${slug}`)
       .then(res => res.json())
       .then(resData => {
         setData(resData);
@@ -305,7 +306,7 @@ export default function BusinessDetail() {
                           onClick={async () => {
                             if (!reviewerName.trim() || !reviewComment.trim()) return;
                             try {
-                              const res = await fetch(`/api/business/${slug}/rate`, {
+                              const res = await fetch(`${API_BASE}/business/${slug}/rate`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({

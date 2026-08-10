@@ -1,4 +1,5 @@
 import React from 'react';
+import { getMediaUrl } from '../../../../lib/services/api';
 import { motion } from 'framer-motion';
 import { 
   Calendar, Globe, Target, MessageCircle, Star, ArrowUpRight, ArrowRight, Megaphone, CheckCircle2 
@@ -66,7 +67,7 @@ export default function DashboardOverviewTab({ profile }: { profile: OwnerProfil
         className="relative overflow-hidden rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/10"
         style={{ 
           background: profile?.cover_image_url 
-            ? `linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4)), url('${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${profile.cover_image_url}')` 
+            ? `linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4)), url('${getMediaUrl(profile.cover_image_url)}')` 
             : 'linear-gradient(to bottom right, #312E81, #1E3A8A, #0F172A)',
           backgroundSize: 'cover',
           backgroundPosition: 'center'

@@ -5,7 +5,7 @@ import {
   MapPin, Clock, Award, FileText, Upload, CreditCard, ChevronRight, ChevronLeft, Check, Sparkles, Globe, DollarSign, Image, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { API_BASE } from '../lib/services/api';
 export default function EnterpriseRegister() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(() => {
@@ -24,7 +24,7 @@ export default function EnterpriseRegister() {
   const [subCategories, setSubCategories] = useState<{id: number, name: string}[]>([]);
 
   useEffect(() => {
-    fetch('/api/admin/categories/')
+    fetch(`${API_BASE}/admin/categories/`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
@@ -206,9 +206,9 @@ export default function EnterpriseRegister() {
   useEffect(() => {
     const selectedCat = categories.find(c => c.name === formData.category);
     if (selectedCat) {
-      fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
+      fetch(`${API_BASE}/admin/subcategories/?category_id=${selectedCat.id}`)
         .then(res => res.json())
-        .then(data => setSubCategories(data))
+        .then(data => setSubCategories(Array.isArray(data) ? data : []))
         .catch(err => console.error("Error fetching subcategories:", err));
     } else {
       setSubCategories([]);
@@ -270,7 +270,7 @@ export default function EnterpriseRegister() {
 
   const sendOtp = async (destination: string, type: 'email' | 'mobile') => {
     try {
-      const res = await fetch('/api/auth/send-otp', {
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ destination, type })
@@ -350,7 +350,7 @@ export default function EnterpriseRegister() {
       if (formData.logoFile) data.append('logo_file', formData.logoFile);
       if (formData.coverFile) data.append('cover_file', formData.coverFile);
 
-      const res = await fetch('/api/auth/register-enterprise', {
+      const res = await fetch(`${API_BASE}/auth/register-enterprise`, {
         method: 'POST',
         body: data,
       });

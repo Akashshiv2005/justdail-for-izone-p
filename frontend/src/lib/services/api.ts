@@ -1,13 +1,29 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+export const getBackendBaseUrl = (): string => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl && (apiUrl.startsWith('http://') || apiUrl.startsWith('https://'))) {
+    return apiUrl.replace(/\/api\/?$/, '');
+  }
+  return '';
+};
+
+export const getMediaUrl = (path: string | null | undefined): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const baseUrl = getBackendBaseUrl();
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath;
+};
 
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: any) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

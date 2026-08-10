@@ -4,6 +4,7 @@ import {
   Eye, Award, Star, Filter, RefreshCw, Search, ShieldAlert 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { authFetch } from '../../../lib/services/authFetch';
 
 export default function VerificationPanel() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -20,15 +21,13 @@ export default function VerificationPanel() {
 
   const fetchRequests = () => {
     setLoading(true);
-    fetch('/api/admin/verification/list', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => {
+    authFetch('/api/admin/verification/list')
+      .then((res: Response) => res.json())
+      .then((data: any) => {
         setRequests(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err: any) => {
         console.error(err);
         setLoading(false);
       });
@@ -39,11 +38,10 @@ export default function VerificationPanel() {
   }, []);
 
   const handleApproveDoc = (docId: number) => {
-    fetch(`/api/admin/verification/approve-doc?doc_id=${docId}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    authFetch(`/api/admin/verification/approve-doc?doc_id=${docId}`, {
+      method: 'POST'
     })
-      .then(res => res.json())
+      .then((res: Response) => res.json())
       .then(() => {
         showToast('Document Approved and Quality Score Updated!');
         fetchRequests();
@@ -57,11 +55,10 @@ export default function VerificationPanel() {
   };
 
   const handleApproveBusiness = (bizId: number) => {
-    fetch(`/api/admin/business/${bizId}/approve`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    authFetch(`/api/admin/business/${bizId}/approve`, {
+      method: 'POST'
     })
-      .then(res => res.json())
+      .then((res: Response) => res.json())
       .then(() => {
         showToast('Business Successfully Approved!');
         setSelectedBiz(null);
@@ -80,9 +77,8 @@ export default function VerificationPanel() {
     setIsDeletingBulk(true);
     try {
       const ids = Array.from(selectedRows);
-      const promises = ids.map(id => fetch(`/api/admin/business/${id}`, { 
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const promises = ids.map(id => authFetch(`/api/admin/business/${id}`, { 
+        method: 'DELETE'
       }));
       await Promise.all(promises);
       
