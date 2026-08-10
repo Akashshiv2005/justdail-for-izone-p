@@ -117,8 +117,6 @@ const Login = () => {
                   <label className="block text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
                   <input 
                     type="email"
-                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                    title="Please enter a valid email address" 
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -173,8 +171,6 @@ const Login = () => {
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Registered Email Address</label>
                 <input 
                   type="email"
-                  pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                  title="Please enter a valid email address" 
                   required
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
