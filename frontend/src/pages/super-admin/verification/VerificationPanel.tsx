@@ -4,6 +4,7 @@ import {
   Eye, Award, Star, Filter, RefreshCw, Search, ShieldAlert 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { authFetch } from '../../../../lib/services/authFetch';
 
 export default function VerificationPanel() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -20,9 +21,7 @@ export default function VerificationPanel() {
 
   const fetchRequests = () => {
     setLoading(true);
-    fetch('/api/admin/verification/list', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
+    authFetch('/api/admin/verification/list')
       .then(res => res.json())
       .then(data => {
         setRequests(Array.isArray(data) ? data : []);

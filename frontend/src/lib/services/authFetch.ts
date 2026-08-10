@@ -1,8 +1,10 @@
-﻿/**
+/**
  * Authenticated fetch helper.
  * Wraps the native fetch API to automatically attach the JWT token
  * from localStorage and use relative URLs (proxied by Vite).
  */
+import { API_BASE } from './api';
+
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = localStorage.getItem('token');
   const headers = new Headers(options.headers || {});
@@ -11,12 +13,16 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  // Default to JSON content type for non-FormData bodies
   if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
-  return fetch(url, { ...options, headers });
+  let finalUrl = url;
+  if (finalUrl.startsWith('/api/')) {
+    finalUrl = `${API_BASE}/${finalUrl.substring(5)}`;
+  }
+
+  return fetch(finalUrl, { ...options, headers });
 }
 
 /**

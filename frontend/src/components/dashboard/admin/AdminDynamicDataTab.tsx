@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { authFetch } from '../../../lib/services/authFetch';
-import { getMediaUrl } from '../../../lib/services/api';
+import { API_BASE, getMediaUrl } from '../../../lib/services/api';
 import { Building2, PhoneCall, CheckCircle2, Menu, X, Edit3, MapPin, UserSquare2, Target, Users, AlertCircle, Star, ChevronLeft, MessageSquare, Clock, Tag, Image, FileText, ExternalLink } from 'lucide-react';
 
 export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: string, onOpenSidebar: () => void }) {
@@ -50,7 +50,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
   };
 
   useEffect(() => {
-    fetch('/api/admin/categories/')
+    fetch(`${API_BASE}/admin/categories/`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Error fetching categories:", err));
