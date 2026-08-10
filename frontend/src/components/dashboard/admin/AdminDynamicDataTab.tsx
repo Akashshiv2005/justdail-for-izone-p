@@ -61,7 +61,7 @@ export default function AdminDynamicDataTab({ tab, onOpenSidebar }: { tab: strin
     if (selectedCatName && categories.length > 0) {
       const selectedCat = categories.find(c => c.name === selectedCatName);
       if (selectedCat) {
-        fetch(`/api/admin/subcategories/?category_id=${selectedCat.id}`)
+        fetch(`${API_BASE}/admin/subcategories/?category_id=${selectedCat.id}`)
           .then(res => res.json())
           .then(data => setSubCategories(data))
           .catch(err => console.error("Error fetching subcategories:", err));
