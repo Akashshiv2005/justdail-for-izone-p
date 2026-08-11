@@ -45,6 +45,9 @@ def ensure_bucket_exists():
     except Exception as e:
         print("error occurred.", e)
 
+# Auto-create bucket on startup if it doesn't exist
+ensure_bucket_exists()
+
 def upload_file_to_minio(file: UploadFile, business_id: int, doc_type: str) -> str:
     """
     Uploads a FastAPI UploadFile to MinIO and returns the generated URL.
