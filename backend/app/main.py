@@ -42,6 +42,28 @@ app = FastAPI(title="BizDial API", version="1.0.0")
 def startup_event():
     pass
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print(f"Global Exception Caught: {exc}")
+    traceback.print_exc()
+    
+    # Explicitly attach CORS headers to the 500 response
+    origin = request.headers.get("origin", "*")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": str(exc)},
+        headers={
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*"
+        }
+    )
+
 
 from app.config import get_cors_origins, DEBUG
 
